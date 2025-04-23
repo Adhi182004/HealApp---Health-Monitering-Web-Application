@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Record - HealApp</title>
+    <style>
+        body {
+            background-color: #f0f8ff;
+            font-family: Arial, sans-serif;
+            padding: 30px;
+        }
+        h1 {
+            text-align: center;
+            color: #004080;
+        }
+        form {
+            background-color: #e6f0ff;
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 500px;
+            margin: auto;
+            box-shadow: 0 0 12px rgba(0,0,0,0.2);
+        }
+        input, button {
+            display: block;
+            width: 95%;
+            padding: 10px;
+            margin: 10px auto;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #004080;
+            color: white;
+            cursor: pointer;
+        }
+        table {
+            margin-top: 40px;
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #ffffff;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #a3c2ff;
+            text-align: center;
+        }
+        th {
+            background-color: #004080;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f7ff;
+        }
+        .btns a {
+            margin: 0 5px;
+            padding: 6px 10px;
+            background-color: #004080;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+        }
+        .btns a.delete {
+            background-color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>HealApp - Student Usage Record</h1>
+    <form method="POST" action="/student">
+        <input type="hidden" name="id" value="{{ student.id if student else '' }}">
+        <input type="text" name="name" placeholder="Name" required value="{{ student.name if student else '' }}">
+        <input type="number" name="age" placeholder="Age" required value="{{ student.age if student else '' }}">
+        <input type="text" name="gender" placeholder="Gender" required value="{{ student.gender if student else '' }}">
+        <input type="text" name="bmi" placeholder="BMI" required value="{{ student.bmi if student else '' }}">
+        <input type="text" name="water" placeholder="Water Intake" required value="{{ student.water if student else '' }}">
+        <input type="text" name="calories" placeholder="Calories" required value="{{ student.calories if student else '' }}">
+        <button type="submit">{{ 'Update' if student else 'Add Record' }}</button>
+    </form>
+
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Gender</th>
+            <th>BMI</th>
+            <th>Water</th>
+            <th>Calories</th>
+            <th>Used On</th>
+            <th>Action</th>
+        </tr>
+        {% for r in records %}
+        <tr>
+            <td>{{ r[1] }}</td>
+            <td>{{ r[2] }}</td>
+            <td>{{ r[3] }}</td>
+            <td>{{ r[4] }}</td>
+            <td>{{ r[5] }}</td>
+            <td>{{ r[6] }}</td>
+            <td>{{ r[7] }}</td>
+            <td class="btns">
+                <a href="/edit/{{ r[0] }}">Edit</a>
+                <a href="/delete/{{ r[0] }}" class="delete" onclick="return confirm('Are you sure?')">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

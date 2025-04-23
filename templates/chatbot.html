@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Health AI Chatbot</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom right, #d1f0e6, #f0f8ff);
+    }
+
+    .chat-container {
+      max-width: 700px;
+      margin: 50px auto;
+      background: #ffffff;
+      padding: 30px 25px;
+      border-radius: 18px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+
+    h2 {
+      text-align: center;
+      color: #00b894;
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    #chat-box {
+      height: 380px;
+      overflow-y: auto;
+      padding: 15px;
+      border: 2px solid #e1f5ea;
+      border-radius: 12px;
+      background: #f8fff9;
+      margin-bottom: 20px;
+      scroll-behavior: smooth;
+    }
+
+    .user-msg, .bot-msg, .error-msg {
+      padding: 12px 15px;
+      margin: 10px 0;
+      border-radius: 18px;
+      max-width: 85%;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    .user-msg {
+      background: #d6eaff;
+      color: #0077cc;
+      align-self: flex-end;
+      margin-left: auto;
+    }
+
+    .bot-msg {
+      background: #dafbe4;
+      color: #2e7d32;
+      align-self: flex-start;
+      margin-right: auto;
+    }
+
+    .error-msg {
+      background: #ffe5e5;
+      color: #c0392b;
+    }
+
+    form {
+      display: flex;
+      gap: 10px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button[type="submit"] {
+      padding: 12px 20px;
+      background: #00b894;
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button[type="submit"]:hover {
+      background: #019875;
+    }
+
+    #suggestions {
+      text-align: center;
+      margin: 25px 0 10px;
+    }
+
+    #suggestions p {
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    #suggestions button {
+      background-color: #00b894;
+      border: none;
+      color: white;
+      margin: 6px;
+      padding: 10px 16px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.3s ease;
+    }
+
+    #suggestions button:hover {
+      background-color: #018f72;
+    }
+
+    .fun-fact-box {
+      margin-top: 25px;
+      border-left: 6px solid #00b894;
+      background: #ecfff6;
+      padding: 15px;
+      border-radius: 12px;
+      font-size: 15px;
+    }
+
+    .fun-fact-box strong {
+      color: #00b894;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="chat-container">
+    <h2>HealApp AI Chatbot 🤖</h2>
+    <div id="chat-box"></div>
+
+    <form id="chat-form">
+      <input type="text" id="user-input" placeholder="Ask something like 'Tips for acidity'..." required>
+      <button type="submit">Send</button>
+    </form>
+
+    <div id="suggestions">
+      <p>💬 Quick Help:</p>
+      <button onclick="sendSuggestion('Health Tips')">Health Tips</button>
+      <button onclick="sendSuggestion('Diet Plan for Ulcer')">Ulcer Diet</button>
+      <button onclick="sendSuggestion('Symptoms of Diabetes')">Diabetes Symptoms</button>
+      <button onclick="sendSuggestion('Water Intake Calculator')">Water Intake</button>
+    </div>
+
+    <div class="fun-fact-box">
+      <strong>💡 Fun Fact:</strong> Did you know that dopamine, a "feel-good" neurotransmitter, boosts motivation and plays a key role in your brain’s reward system? Keep your health in check for a happy brain!
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const form = document.getElementById("chat-form");
+      const input = document.getElementById("user-input");
+      const chatBox = document.getElementById("chat-box");
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const message = input.value.trim();
+        if (message === "") return;
+
+        appendMessage("You", message, "user-msg");
+        input.value = "";
+
+        fetch("/chatbot", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: message })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.reply) {
+            appendMessage("Bot", data.reply, "bot-msg");
+          } else {
+            appendMessage("Bot", "Hmm... I didn’t find a response.", "bot-msg");
+          }
+        })
+        .catch(error => {
+          console.error("Fetch error:", error);
+          appendMessage("Error", "Oops! Something went wrong.", "error-msg");
+        });
+      });
+
+      function appendMessage(sender, text, className) {
+        const msg = document.createElement("div");
+        msg.classList.add(className);
+        msg.innerHTML = `<strong>${sender}:</strong> ${text}`;
+        chatBox.appendChild(msg);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }
+
+      window.sendSuggestion = function (text) {
+        input.value = text;
+        form.dispatchEvent(new Event("submit"));
+      };
+    });
+  </script>
+
+</body>
+</html>
