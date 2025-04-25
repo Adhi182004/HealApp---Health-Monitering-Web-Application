@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session ,send_from_directory
 import mysql.connector , os
 from datetime import datetime
-from transformers import AutoModelForCausalLM, AutoTokenizer
 
 app = Flask(__name__)
 
@@ -15,8 +14,8 @@ import mysql.connector
 mydb = mysql.connector.connect(
     host="localhost",
     user="root",          # Your MySQL username
-    password="adhi2004",          # Your MySQL password (if any)
-    database="healthplan" # Your database name
+    password="",          # Your MySQL password (if any)
+    database="healApp" # Your database name
 )
 mycursor = mydb.cursor()
 
