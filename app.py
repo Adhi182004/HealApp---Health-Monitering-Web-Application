@@ -1,12 +1,13 @@
-from flask import Flask, render_template, request, redirect, url_for, session ,send_from_directory
-import mysql.connector , os
-from datetime import datetime
-
+from flask import Flask, render_template, request, redirect, url_for, session ,send_from_directory 
+import mysql.connector , os 
+from datetime import datetime 
 app = Flask(__name__)
 
-from flask import jsonify
+from groq import Groq
+from flask import Flask, request, jsonify
+import requests
+
 app = Flask(__name__)
-app.secret_key = "healapp_secret"  # Secret key added
 
 import mysql.connector
 
@@ -14,10 +15,11 @@ import mysql.connector
 mydb = mysql.connector.connect(
     host="localhost",
     user="root",          # Your MySQL username
-    password="",          # Your MySQL password (if any)
-    database="healApp" # Your database name
+    password="adhi2004",          # Your MySQL password (if any)
+    database="healthplan" # Your database name
 )
 mycursor = mydb.cursor()
+
 
 @app.route('/')
 def open_page():
@@ -27,6 +29,9 @@ def open_page():
 def record():
     return render_template('record.html')
 
+@app.route('/game')
+def game():
+    return render_template('game.html')
 
 @app.route('/student', methods=['GET', 'POST'])
 def student():
@@ -210,67 +215,40 @@ def water():
 
     return render_template('water.html', result=result, tips=tips)
 
-tokenizer = AutoTokenizer.from_pretrained("distilgpt2")
-model = AutoModelForCausalLM.from_pretrained("distilgpt2")
 
-def get_local_ai_reply(prompt):
-    inputs = tokenizer.encode(prompt, return_tensors="pt")
-    outputs = model.generate(inputs, max_length=100, pad_token_id=tokenizer.eos_token_id)
-    reply = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    return reply.replace(prompt, "").strip()
+GROQ_API_KEY = "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"
+API_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 @app.route("/chatbot")
-def chatbot_page():
+def chat():
     return render_template("chatbot.html")
 
-@app.route("/chatbot", methods=["GET", "POST"])
+@app.route("/chatbot", methods=["POST"])
 def chatbot():
-    if request.method == "POST":
-        user_input = request.json["message"].lower()
+    user_msg = request.json.get("message")
 
-        if "hi" in user_input or "hello" in user_input:
-            reply = "Hello! How can I help you today?"
-        elif "bmi" in user_input:
-            reply = 'To check your BMI, click here: <a href="/bmi" target="_blank">BMI Calculator</a>'
-        elif "calorie" in user_input:
-            reply = 'Plan your meals with this: <a href="/calorie" target="_blank">Calorie Calculator</a>'
-        elif "water" in user_input:
-            reply = 'Know your hydration needs: <a href="/water" target="_blank">Water Intake Calculator</a>'
-        elif "ulcer" in user_input:
-            reply = "Avoid spicy, oily, and acidic foods. Prefer bananas, coconut water, and rice."
-        elif "diabetes" in user_input:
-            reply = "Avoid sugary foods. Include more vegetables, oats, and whole grains in your diet."
-        elif "cholesterol" in user_input:
-            reply = "Limit fried foods. Include oats, nuts, and heart-friendly oils like olive oil."
-        elif "obesity" in user_input:
-            reply = "Control portions and avoid junk. Choose fruits, veggies, and lean protein."
-        elif "acidity" in user_input:
-            reply = "Avoid caffeine and spicy foods. Drink cold milk and eat early dinners."
-        elif "fever" in user_input:
-            reply = "Stay hydrated and rest well. Avoid oily food. Eat khichdi, soup, or curd rice."
-        elif "cold" in user_input:
-            reply = "Take warm fluids, avoid cold drinks. Ginger tea and turmeric milk can help."
-        elif "cough" in user_input:
-            reply = "Avoid chilled items. Drink hot water and take honey with ginger."
-        elif "constipation" in user_input:
-            reply = "Eat high-fiber foods like fruits and drink lots of water."
-        elif "gas" in user_input:
-            reply = "Avoid carbonated drinks. Jeera water and ginger help relieve gas."
-        elif "headache" in user_input:
-            reply = "Take rest, stay hydrated, and avoid screen time. Eat something light."
-        elif "vomiting" in user_input:
-            reply = "Eat light. Drink electrolyte water or ginger tea for relief."
-        elif "diarrhea" in user_input:
-            reply = "Drink ORS or coconut water. Avoid milk and spicy foods temporarily."
-        elif "weakness" in user_input:
-            reply = "Eat iron-rich foods like spinach, nuts, and dates. Sleep well."
-        elif "health" in user_input:
-            reply = "Sure, do you want tips on diet, exercise, or symptoms?"
-        else:
-            reply = "I'm here to help with your health questions! Please ask about symptoms, diet, or tools like BMI, calories, and water intake."
+    payload = {
+        "model": "openai/gpt-oss-20b",
+        "messages": [
+            {"role": "system", "content": "You are HealMate, a friendly health assistant. Give medically safe guidance, not diagnosis."},
+            {"role": "user", "content": user_msg}
+        ]
+    }
 
-        return jsonify({"reply": reply})
-    return render_template("chatbot.html")
+    headers = {
+        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    try:
+        response = requests.post(API_URL, json=payload, headers=headers)
+        data = response.json()
+        reply = data["choices"][0]["message"]["content"]
+    except:
+        reply = "Problem contacting AI service. Try later."
+
+    return jsonify({"reply": reply})
+
 
 
 @app.route('/predict', methods=['GET', 'POST'])
@@ -358,9 +336,21 @@ def foodtips():
 def healthfacts():
     return render_template('healthfacts.html')
 
+@app.route("/visualizer")
+def visualizer():
+    return render_template("visualizer.html")
+
+@app.route('/nutrition')
+def nutrition():
+    return render_template('nutrition.html')
+
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
+@app.route("/healometer")
+def healometer():
+    return render_template("healometer.html")
 
 # Run the app
 if __name__ == '__main__':
