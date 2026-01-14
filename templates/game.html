@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HealApp - Game</title>
+  <link rel="stylesheet" href="">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f0f8ff;
+    }
+    #scoreboard {
+      margin: 15px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #00b894;
+    }
+    #gameCanvas {
+      border: 3px solid #00b894;
+      display: block;
+      margin: auto;
+      background: #f9f9f9;
+    }
+    #tipBox {
+      margin-top: 15px;
+      font-size: 18px;
+      font-style: italic;
+      color: #333;
+    }
+    .back-btn {
+      display: inline-block;
+      margin: 20px;
+      padding: 10px 20px;
+      background: #00b894;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+    .back-btn:hover {
+      background: #019270;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1><i class="fas fa-gamepad"></i> Health Game</h1>
+    <a href="/" class="back-btn">⬅ Back to Home</a>
+  </header>
+
+  <div id="scoreboard">
+    <span id="score">Score: 0</span> | 
+    <span id="lives">Lives: 3</span> | 
+    <span id="time">Time: 120s</span>
+  </div>
+
+  <canvas id="gameCanvas" width="600" height="400"></canvas>
+  <div id="tipBox">🎯 Hit healthy foods for points, avoid junk!</div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const scoreEl = document.getElementById("score");
+    const livesEl = document.getElementById("lives");
+    const timeEl = document.getElementById("time");
+    const tipBox = document.getElementById("tipBox");
+
+    let score = 0;
+    let lives = 1;
+    let timeLeft = 30;
+    let gameInterval;
+    let foods = [];
+
+    // ✅ Use Flask static URL for assets
+    const healthyFoods = [
+      "{{ url_for('static', filename='assets/apple.png') }}",
+      "{{ url_for('static', filename='assets/banana.png') }}",
+      "{{ url_for('static', filename='assets/carrot.png') }}",
+    ];
+    const junkFoods = [
+      "{{ url_for('static', filename='assets/burger.png') }}",
+      "{{ url_for('static', filename='assets/pizza.png') }}",
+      "{{ url_for('static', filename='assets/can.png') }}"
+    ];
+
+    const negativeTips = [
+      "🚫 Junk food increases obesity risk!",
+      "❌ Too much sugar weakens immunity.",
+      "⚠️ Fried foods harm your heart.",
+      "🥤 Sugary drinks cause diabetes risk." 
+    ];
+
+    // Load image helper
+    function loadImage(src) {
+      const img = new Image();
+      img.src = src;  // ✅ Flask static URL already applied
+      return img;
+    }
+
+    class Food {
+      constructor(x, y, type) {
+        this.x = x;
+        this.y = y;
+        this.speed = 8 + Math.random() * 8;
+        this.type = type;
+        if (type === "healthy") {
+          this.image = loadImage(healthyFoods[Math.floor(Math.random() * healthyFoods.length)]);
+        } else {
+          this.image = loadImage(junkFoods[Math.floor(Math.random() * junkFoods.length)]);
+        }
+      }
+      draw() {
+        ctx.drawImage(this.image, this.x, this.y, 40, 40);
+      }
+      update() {
+        this.y -= this.speed;
+      }
+    }
+
+    // Add food randomly
+    function spawnFood() {
+      const x = Math.random() * (canvas.width - 40);
+      const type = Math.random() < 0.6 ? "healthy" : "junk";
+      foods.push(new Food(x, canvas.height, type));
+    }
+
+    // Draw & update game
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      foods.forEach((food, i) => {
+        food.update();
+        food.draw();
+        if (food.y < -50) foods.splice(i, 1);
+      });
+    }
+
+    // Game loop
+    function gameLoop() {
+      draw();
+    }
+
+    // Click detection
+    canvas.addEventListener("click", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+
+      foods.forEach((food, i) => {
+        if (clickX >= food.x && clickX <= food.x + 40 &&
+            clickY >= food.y && clickY <= food.y + 40) {
+          if (food.type === "healthy") {
+            score += 10;
+          } else {
+            lives -= 1;
+            tipBox.innerText = negativeTips[Math.floor(Math.random() * negativeTips.length)];
+          }
+          foods.splice(i, 1);
+        }
+      });
+
+      scoreEl.textContent = "Score: " + score;
+      livesEl.textContent = "Lives: " + lives;
+
+      if (lives <= 0) {
+        endGame("Game Over ❌ You lost all lives!");
+      }
+    });
+
+    // Timer
+    function startTimer() {
+      const timer = setInterval(() => {
+        timeLeft--;
+        timeEl.textContent = "Time: " + timeLeft + "s";
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          endGame("⏳ Time’s up! Final Score: " + score);
+        }
+      }, 1000);
+    }
+
+    // End game
+    function endGame(message) {
+      clearInterval(gameInterval);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.font = "24px Arial";
+      ctx.fillStyle = "red";
+      ctx.fillText(message, 100, 200);
+    }
+
+    // Start
+    function startGame() {
+      score = 0;
+      lives = 3;
+      timeLeft = 30;
+      foods = [];
+      scoreEl.textContent = "Score: 0";
+      livesEl.textContent = "Lives: 3";
+      timeEl.textContent = "Time: 120s";
+      tipBox.innerText = "🎯 Hit healthy foods for points, avoid junk!";
+
+      startTimer();
+      gameInterval = setInterval(() => {
+        if (Math.random() < 0.1) spawnFood();
+        gameLoop();
+      }, 50);
+    }
+
+    startGame();
+  </script>
+</body>
+</html>

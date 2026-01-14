@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Student Record - HealApp</title>
+    <title>Health Record - HealApp</title>
     <style>
         body {
             background-color: #f0f8ff;
@@ -65,7 +65,7 @@
     </style>
 </head>
 <body>
-    <h1>HealApp - Student Usage Record</h1>
+    <h1>HealApp - Health Record</h1>
     <form method="POST" action="/student">
         <input type="hidden" name="id" value="{{ student.id if student else '' }}">
         <input type="text" name="name" placeholder="Name" required value="{{ student.name if student else '' }}">

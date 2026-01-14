@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Heal Analyzer Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #e0fcff;
+}
+
+header {
+    background: #00b894;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    font-size: 28px;
+}
+
+.dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 25px;
+    padding: 30px;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    cursor: pointer;
+    text-align: center;
+    transition: 0.3s;
+}
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card i {
+    font-size: 40px;
+    color: #00b894;
+}
+
+#panel {
+    max-width: 750px;
+    margin: auto;
+    margin-top: 25px;
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    display: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 2px solid #00b894;
+    margin-top: 10px;
+}
+
+button {
+    padding: 12px;
+    width: 100%;
+    border: none;
+    background: #00b894;
+    color: white;
+    font-size: 18px;
+    border-radius: 8px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+button:hover {
+    background: #009e81;
+}
+
+#chartContainer {
+    margin-top: 25px;
+}
+
+.tips-box {
+    background: #e0f7fa;
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 20px;
+    font-size: 17px;
+    color: #004d40;
+}
+
+.water-tank {
+    width: 150px;
+    height: 200px;
+    margin: auto;
+    border: 3px solid #00b894;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+}
+.water-fill {
+    background: #00b894;
+    width: 100%;
+    height: 0%;
+    position: absolute;
+    bottom: 0;
+    transition: 1s;
+}
+</style>
+</head>
+
+<body>
+
+<header>Heal Analyzer Dashboard</header>
+
+<div class="dashboard">
+    <div class="card" onclick="openPanel('sleep')">
+        <i class="fas fa-bed"></i><br><br>
+        Sleep Analysis
+    </div>
+
+    <div class="card" onclick="openPanel('exercise')">
+        <i class="fas fa-running"></i><br><br>
+        Exercise Level
+    </div>
+
+    <div class="card" onclick="openPanel('addiction')">
+        <i class="fas fa-skull-crossbones"></i><br><br>
+        Addiction Check
+    </div>
+
+    <div class="card" onclick="openPanel('junk')">
+        <i class="fas fa-hamburger"></i><br><br>
+        Junk / Sugar Intake
+    </div>
+
+    <div class="card" onclick="openPanel('hydration')">
+        <i class="fas fa-tint"></i><br><br>
+        Hydration Level
+    </div>
+
+    <div class="card" onclick="openPanel('screen')">
+        <i class="fas fa-tv"></i><br><br>
+        Screen Time
+    </div>
+</div>
+
+<div id="panel">
+    <h2 id="panelTitle"></h2>
+    <div id="inputArea"></div>
+    <button onclick="analyze()">Analyse</button>
+
+    <div id="chartContainer">
+        <canvas id="chart"></canvas>
+        <div id="waterArea" style="display:none;">
+            <div class="water-tank">
+                <div class="water-fill" id="waterFill"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tips" class="tips-box"></div>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
+
+<script>
+let selectedFeature = "";
+let chartRef = null;
+
+function openPanel(feature) {
+    selectedFeature = feature;
+    document.getElementById("panel").style.display = "block";
+    document.getElementById("chartContainer").style.display = "none";
+    document.getElementById("waterArea").style.display = "none";
+    document.getElementById("tips").innerHTML = "";
+
+    const panelTitle = {
+        sleep: "Sleep Analysis",
+        exercise: "Exercise Level",
+        addiction: "Addiction Analysis",
+        junk: "Junk & Sugar Intake",
+        hydration: "Hydration Level",
+        screen: "Screen Time Analysis"
+    };
+
+    const inputs = {
+        sleep: `<input id="val" type="number" placeholder="Enter sleep hours (1–12)">`,
+        exercise: `<input id="val" type="number" placeholder="Rate activity 0–10">`,
+        addiction: `
+            <select id="val">
+                <option>None</option>
+                <option>Mobile Addiction</option>
+                <option>Gaming Addiction</option>
+                <option>Alcohol</option>
+                <option>Smoking</option>
+            </select>
+        `,
+        junk: `<input id="val" type="number" placeholder="Times you eat junk per week">`,
+        hydration: `<input id="val" type="number" placeholder="Liters of water per day">`,
+        screen: `<input id="val" type="number" placeholder="Hours of movies/series per day">`
+    };
+
+    document.getElementById("panelTitle").innerHTML = panelTitle[feature];
+    document.getElementById("inputArea").innerHTML = inputs[feature];
+}
+
+function destroyChart() {
+    if (chartRef) chartRef.destroy();
+}
+
+function analyze() {
+    let value = document.getElementById("val").value;
+    if (value === "") return alert("Please enter value");
+
+    document.getElementById("chartContainer").style.display = "block";
+    document.getElementById("tips").innerHTML = "";
+
+    destroyChart();
+
+    switch (selectedFeature) {
+        case "sleep": sleepChart(value); break;
+        case "exercise": exerciseChart(value); break;
+        case "addiction": addictionChart(value); break;
+        case "junk": junkChart(value); break;
+        case "hydration": hydrationChart(value); break;
+        case "screen": screenChart(value); break;
+    }
+}
+
+function sleepChart(val) {
+    chartRef = new Chart(chart, {
+        type: "bar",
+        data: { labels: ["Sleep Hours"], datasets: [{ data:[val], backgroundColor:"#00b894"}] }
+    });
+
+    let tips = "";
+    if (val < 5) tips = "⚠ Lack of sleep increases heart disease risk by 30%.";
+    else if (val < 7) tips = "🙂 Decent, but aim for 7–8 hours.";
+    else tips = "💚 Perfect! You meet recommended sleep duration.";
+
+    tips += "<br><br><strong>Research:</strong><br>• CDC recommends 7–9 hours sleep.<br>• Harvard: Low sleep = high stress hormones.";
+
+    document.getElementById("tips").innerHTML = tips;
+}
+
+function exerciseChart(val) {
+    chartRef = new Chart(chart, {
+        type: "bar",
+        data: { labels:["Activity Level"], datasets:[{data:[val], backgroundColor:"#009688"}]},
+        options:{indexAxis:"y"}
+    });
+
+    let tips = "";
+    if(val < 3) tips = "⚠ Sedentary lifestyle increases obesity + depression.";
+    else if(val < 6) tips = "🙂 Moderate activity. Improve gradually.";
+    else tips = "💚 Excellent active lifestyle!";
+
+    tips += "<br><br><strong>Research:</strong><br>• WHO: 150 mins/week recommended.<br>• Exercise boosts serotonin & dopamine.";
+
+    document.getElementById("tips").innerHTML = tips;
+}
+
+function addictionChart(val) {
+    let labels = ["None","Mobile","Gaming","Alcohol","Smoking"];
+    let values = labels.map(x => x === val ? 1 : 0);
+
+    chartRef = new Chart(chart, {
+        type: "pie",
+        data: {labels, datasets:[{data:values}]}
+    });
+
+    let tips = "";
+    if(val === "None") tips = "💚 You have no addictions. Great mental stability!";
+    else tips = "⚠ Addiction reduces focus, mental clarity, and physical health.";
+
+    tips += "<br><br><strong>Research:</strong><br>• Mobile addiction reduces memory by 20%.<br>• Smoking → 20× risk of lung disease.";
+
+    document.getElementById("tips").innerHTML = tips;
+}
+
+function junkChart(val){
+    chartRef = new Chart(chart,{
+        type:"bar",
+        data:{labels:["Junk Intake"],datasets:[{data:[val],backgroundColor:"red"}]}
+    });
+
+    let tips="";
+    if(val > 3) tips="⚠ High sugar increases diabetes risk & inflammation.";
+    else tips="🙂 Good control. Maintain balanced diet.";
+
+    tips+="<br><br><strong>Research:</strong><br>• WHO: max 25g sugar/day.<br>• Junk food spikes insulin rapidly.";
+
+    document.getElementById("tips").innerHTML=tips;
+}
+
+function hydrationChart(val){
+    document.getElementById("chartContainer").style.display = "none";
+    document.getElementById("waterArea").style.display = "block";
+
+    document.getElementById("waterFill").style.height = (val * 20) + "%";
+
+    let tips="";
+    if(val < 2) tips="⚠ Low hydration reduces concentration by 20%.";
+    else tips="💧 Good hydration!";
+
+    tips+="<br><br><strong>Research:</strong><br>• Brain is 73% water.<br>• 2% dehydration decreases focus.";
+
+    document.getElementById("tips").innerHTML=tips;
+}
+
+function screenChart(val){
+    let dopamine=[10,20,50,60,40,20];
+
+    chartRef = new Chart(chart,{
+        type:"line",
+        data:{
+            labels:["Start","20m","40m","1h","2h","After"],
+            datasets:[{data:dopamine,borderColor:"#00b894",fill:false}]
+        }
+    });
+
+    let tips="";
+    if(val > 3) tips="⚠ High screen time weakens dopamine system & sleep cycle.";
+    else tips="🙂 Low screen time is healthy.";
+
+    tips+="<br><br><strong>Research:</strong><br>• Blue light reduces melatonin.<br>• Binge watching overstimulates dopamine.";
+
+    document.getElementById("tips").innerHTML=tips;
+}
+</script>
+
+</body>
+</html>
