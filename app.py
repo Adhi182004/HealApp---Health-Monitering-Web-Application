@@ -21,6 +21,87 @@ mydb = mysql.connector.connect(
 mycursor = mydb.cursor()
 
 
+CSV_PATH = "HealApp---Health-Monitering-Web-Application/data/hospital.csv"
+
+# ---------------- Distance ----------------
+def haversine(lat1, lon1, lat2, lon2):
+    R = 6371
+    lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+    a = math.sin(dlat/2)**2 + math.cos(lat1)*math.cos(lat2)*math.sin(dlon/2)**2
+    return round(R * 2 * math.asin(math.sqrt(a)), 2)
+
+# ---------------- Reverse Geocode ----------------
+def reverse_location(lat, lon):
+    try:
+        url = "https://nominatim.openstreetmap.org/reverse"
+        params = {
+            "lat": lat,
+            "lon": lon,
+            "format": "json"
+        }
+        headers = {"User-Agent": "heal-visualizer"}
+        r = requests.get(url, params=params, headers=headers, timeout=5)
+        if r.status_code == 200:
+            return r.json().get("display_name", "")
+    except:
+        pass
+    return "Unknown location"
+
+# ---------------- Routes ----------------
+@app.route("/visualizer")
+def visualizer():
+    return render_template("visualizer.html")
+
+@app.route("/visualize", methods=["POST"])
+def visualize():
+    data = request.get_json()
+    user_lat = float(data["lat"])
+    user_lon = float(data["lon"])
+
+    df = pd.read_csv(CSV_PATH)
+
+    hospitals = []
+    for _, row in df.iterrows():
+        dist = haversine(user_lat, user_lon, row["latitude"], row["longitude"])
+    hospitals.append({
+           "name": row["name"],
+           "city": row["city"],"address": row["address"],
+           "address": row["address"],
+           "pincode": row["pincode"],
+           "distance": dist,
+           "lat": row["latitude"],
+           "lon": row["longitude"],
+           "website": row["website"],
+           "contact": row["contact"]
+           })
+
+
+    hospitals = sorted(hospitals, key=lambda x: x["distance"])[:20]
+    return jsonify(hospitals)
+
+@app.route("/route", methods=["POST"])
+def route():
+    try:
+        data = request.get_json()
+
+        slat = float(data["start_lat"])
+        slon = float(data["start_lon"])
+        elat = float(data["end_lat"])
+        elon = float(data["end_lon"])
+
+        return jsonify({
+            "status": "ok",
+            "distance": haversine(slat, slon, elat, elon),
+            "from": reverse_location(slat, slon),
+            "to": reverse_location(elat, elon)
+        })
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+
 @app.route('/')
 def open_page():
     return render_template('open.html')
@@ -355,3 +436,4 @@ def healometer():
 # Run the app
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+
