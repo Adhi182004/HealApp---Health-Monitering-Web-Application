@@ -145,7 +145,7 @@ input{
     <h3>Nearby Hospitals</h3>
     <div id="list"></div>
 
-    <div id="routePanel" style="display:none">
+    <div id="routePanel" style="display:none; border-top:2px solid #00b894; margin-top:10px;">
       <h3>🚗 Route Details</h3>
       <p id="routeText">Loading...</p>
       <button class="back-btn" onclick="back()">⬅ Back to Hospitals</button>
@@ -217,41 +217,49 @@ function usePlace(){
 }
 
 
-function fetchHospitals(){
-  fetch("/visualize",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({lat:userLat,lon:userLon})
+function fetchHospitals() {
+  const listDiv = document.getElementById("list"); // Explicitly define list
+  const routePanel = document.getElementById("routePanel");
+ 
+  listDiv.style.display = "block";
+  routePanel.style.display = "none";
+
+  fetch("/visualize", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lat: userLat, lon: userLon })
   })
-  .then(r=>r.json())
-  .then(data=>{
-    list.innerHTML="";
-    routePanel.style.display="none";
+  .then(r => r.json())
+  .then(data => {
+    listDiv.innerHTML = ""; // Clear existing content
 
-    data.forEach(h=>{
-      L.marker([h.lat,h.lon]).addTo(map)
-       .bindPopup(h.name);
+    if (data.length === 0) {
+      listDiv.innerHTML = "<p>No hospitals found nearby.</p>";
+      return;
+    }
 
-      list.innerHTML+=`
+    data.slice(0,3).forEach(h => {
+      // Add Marker to Map
+      L.marker([h.lat, h.lon]).addTo(map).bindPopup(h.name);
+
+      // Append Card to Panel
+      listDiv.innerHTML += `
       <div class="card">
         <h4 onclick="toggleWebsite(this)">${h.name}</h4>
-
         <div class="website-box" style="display:none">
-          ${h.website && h.website!=="-" 
-          ? `<a href="${h.website.startsWith('')?h.website:''+h.website}" target="_blank">🌐 Visit Website</a>`
+          ${h.website && h.website !== "-"
+          ? `<a href="${h.website}" target="_blank">🌐 Visit Website</a>`
           : `<small>🌐 Website not available</small>`}
         </div>
-
         <small>${h.address}, ${h.city}</small><br>
         <small>📞 ${h.contact}</small><br>
         <small>📍 ${h.distance} km away</small>
-
         <button class="route-btn" onclick='showRoute(${JSON.stringify(h)})'>Show Route</button>
       </div>`;
     });
-  });
+  })
+  .catch(err => console.error("Error:", err));
 }
-
 function showRoute(h){
   routePanel.style.display="block";
   routeText.innerHTML="Loading...";
