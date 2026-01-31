@@ -56,29 +56,42 @@ def visualizer():
 
 @app.route("/visualize", methods=["POST"])
 def visualize():
-    data = request.get_json()
-    user_lat = float(data["lat"])
-    user_lon = float(data["lon"])
+    
+    user_lat = float(request.json["lat"])
+    user_lon = float(request.json["lon"])
 
     df = pd.read_csv(CSV_PATH)
 
     hospitals = []
+    
     for _, row in df.iterrows():
-        dist = haversine(user_lat, user_lon, row["latitude"], row["longitude"])
-    hospitals.append({
-           "name": row["name"],
-           "city": row["city"],"address": row["address"],
-           "address": row["address"],
-           "pincode": row["pincode"],
+        
+        lat = row.get("latitude")
+        lon = row.get("longitude")
+        
+        if pd.isna(lat) or pd.isna(lon): 
+            continue
+        
+        dist = haversine(
+            user_lat, user_lon, 
+            float(lat),float(lon))
+        
+        hospitals.append({
+        
+           "name": row.get("name", ""),
+           "city": row.get("city", ""),
+           "address": row.get("address", ""),
+           "pincode": row.get("pincode", ""),
            "distance": dist,
-           "lat": row["latitude"],
-           "lon": row["longitude"],
-           "website": row["website"],
-           "contact": row["contact"]
+           "lat": float(lat),
+           "lon": float(lon),
+           "website": row.get("website", ""),
+           "contact": row.get("contact", "")
            })
 
 
-    hospitals = sorted(hospitals, key=lambda x: x["distance"])[:20]
+    hospitals = sorted(hospitals,key=lambda x: x["distance"])
+    
     return jsonify(hospitals)
 
 @app.route("/route", methods=["POST"])
@@ -100,6 +113,8 @@ def route():
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
+
+
 
 
 @app.route('/')
@@ -436,4 +451,5 @@ def healometer():
 # Run the app
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+
 
