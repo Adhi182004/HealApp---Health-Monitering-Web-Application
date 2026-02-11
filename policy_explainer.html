@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>AI Policy Explainer</title>
+
+<style>
+body{
+    font-family:Arial;
+    background:linear-gradient(135deg,#4caf50,#2196f3);
+    margin:0;
+    color:#333;
+}
+
+header{
+    text-align:center;
+    color:white;
+    padding:25px;
+}
+
+.container{
+    max-width:850px; /* Slightly wider for tables */
+    margin:30px auto;
+    background:white;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.25)} 
+
+.upload-box{
+    text-align:center;
+    padding:20px;
+    border:2px dashed #4caf50;
+    border-radius:10px;
+} /*[span_9](end_span) */
+
+button{
+    background:#4caf50;
+    color:white;
+    border:none;
+    padding:10px 20px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:15px;
+} /*[span_10](end_span) */
+
+/* BEST LEVEL RESULT STYLING */
+.result{
+    margin-top:25px;
+    padding:25px;
+    background:#ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius:10px;
+    line-height:1.6;
+} /*[span_11](end_span) */
+
+/* Table styling for AI output */
+.result table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+.result th, .result td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+.result th {
+    background-color: #f8f9fa;
+    color: #2e7d32;
+    font-weight: bold;
+}
+
+.result tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.loader{
+    display:none;
+    text-align:center;
+    margin-top:10px;
+    color:#666;
+} /*[span_12](end_span) */
+
+</style>
+</head>
+
+<body>
+
+<header>
+<h2>📄 AI Insurance Policy Explainer</h2>
+<p>Upload your policy PDF → Get simple AI explanation</p>
+</header>
+
+<div class="container">
+    <form method="POST" enctype="multipart/form-data" onsubmit="showLoader()">
+        <div class="upload-box">
+            <input type="file" name="policy" required>
+            <br><br>
+            <button type="submit">Explain Policy</button>
+        </div>
+        <div class="loader" id="loader">
+            ⏳ AI analyzing your document...
+        </div>
+    </form>
+
+    {% if summary %}
+    <div class="result">
+        {{ summary|safe }}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function showLoader(){
+    document.getElementById("loader").style.display="block";
+}
+</script>
+
+</body>
+</html>

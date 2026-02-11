@@ -1,0 +1,615 @@
+<<<<<<< HEAD
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Heal Visualizer – Nearby Hospitals</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<style>
+:root{
+  --primary:#00b894;
+  --secondary:#0984e3;
+  --bg:#f4ffff;
+}
+
+body{
+  margin:0;
+  font-family:Segoe UI, Arial;
+  background:var(--bg);
+}
+
+/* HEADER */
+#top{
+  background:linear-gradient(90deg,var(--primary),var(--secondary));
+  color:white;
+  padding:16px 24px;
+}
+#top h2{margin:0;}
+#top small{opacity:.9}
+
+/* CONTROLS */
+#controls{
+  padding:12px 20px;
+  background:white;
+  display:flex;
+  gap:10px;
+  align-items:center;
+  border-bottom:1px solid #ddd;
+}
+
+button{
+  padding:8px 14px;
+  border:none;
+  border-radius:6px;
+  background:var(--primary);
+  color:white;
+  cursor:pointer;
+  font-weight:600;
+}
+button:hover{opacity:.9}
+
+input{
+  padding:7px;
+  width:130px;
+  border-radius:5px;
+  border:1px solid #ccc;
+}
+
+/* LAYOUT */
+#container{
+  display:flex;
+  height:calc(100vh - 130px);
+}
+#map{flex:2}
+#panel{
+  flex:1;
+  background:white;
+  padding:14px;
+  overflow:auto;
+  border-left:4px solid var(--primary);
+}
+
+/* HOSPITAL CARD */
+.card{
+  background:#fff;
+  border-radius:10px;
+  padding:12px;
+  margin-bottom:14px;
+  box-shadow:0 4px 12px rgba(0,0,0,.08);
+  transition:.2s;
+}
+.card:hover{
+  transform:translateY(-2px);
+}
+
+.card h4{
+  margin:0;
+  color:var(--primary);
+  cursor:pointer;
+}
+
+.website-box{
+  margin:6px 0;
+}
+
+.website-box a{
+  color:var(--secondary);
+  text-decoration:none;
+  font-weight:600;
+}
+
+.route-btn{
+  margin-top:8px;
+  width:100%;
+  background:var(--secondary);
+}
+
+/* ROUTE PANEL */
+#routePanel{
+  background:#f9ffff;
+  border-radius:10px;
+  padding:14px;
+  box-shadow:0 4px 12px rgba(0,0,0,.1);
+}
+
+#routePanel h3{
+  margin-top:0;
+  color:var(--secondary);
+}
+
+.back-btn{
+  background:#555;
+  margin-top:10px;
+  width:100%;
+}
+</style>
+</head>
+
+<body>
+
+<div id="top">
+  <h2>🩺 Heal Visualizer</h2>
+  <small>Smart Nearby Hospital & Route Finder</small>
+</div>
+
+<div id="controls">
+  <input id="place" placeholder="Enter place / area / city" style="width:220px">
+<button onclick="usePlace()">🔍 Search Place</button>
+</div>
+
+<div id="container">
+  <div id="map"></div>
+
+  <div id="panel">
+    <h3>Nearby Hospitals</h3>
+    <div id="list"></div>
+
+    <div id="routePanel" style="display:none; border-top:2px solid #00b894; margin-top:10px;">
+      <h3>🚗 Route Details</h3>
+      <p id="routeText">Loading...</p>
+      <button class="back-btn" onclick="back()">⬅ Back to Hospitals</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+let map,userLat,userLon,routeLine;
+
+function initMap(lat,lon){
+  if(map) map.remove();
+  map=L.map('map').setView([lat,lon],13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+  L.marker([lat,lon]).addTo(map).bindPopup("You are here").openPopup();
+}
+
+function useLive(){
+    navigator.geolocation.getCurrentPosition(
+        pos => {
+            userLat = pos.coords.latitude;
+            userLon = pos.coords.longitude;
+
+            // Accuracy check
+            if(pos.coords.accuracy > 2000){
+                alert("Location accuracy is low. Please search place manually.");
+                return;
+            }
+
+            initMap(userLat, userLon);
+            fetchHospitals();
+        },
+        () => alert("Live location failed. Use place search."),
+        { enableHighAccuracy:true, timeout:10000 }
+    );
+}
+
+
+function useManual(){
+  userLat=parseFloat(lat.value);
+  userLon=parseFloat(lon.value);
+  initMap(userLat,userLon);
+  fetchHospitals();
+}
+
+function usePlace(){
+    const place = document.getElementById("place").value;
+    if(!place){
+        alert("Enter a place name");
+        return;
+    }
+
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${place}`)
+    .then(res => res.json())
+    .then(data => {
+        if(data.length === 0){
+            alert("Place not found");
+            return;
+        }
+
+        userLat = parseFloat(data[0].lat);
+        userLon = parseFloat(data[0].lon);
+
+        initMap(userLat, userLon);
+        fetchHospitals();
+    });
+}
+
+
+function fetchHospitals() {
+  const listDiv = document.getElementById("list"); // Explicitly define list
+  const routePanel = document.getElementById("routePanel");
+ 
+  listDiv.style.display = "block";
+  routePanel.style.display = "none";
+
+  fetch("/visualize", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lat: userLat, lon: userLon })
+  })
+  .then(r => r.json())
+  .then(data => {
+    listDiv.innerHTML = ""; // Clear existing content
+
+    if (data.length === 0) {
+      listDiv.innerHTML = "<p>No hospitals found nearby.</p>";
+      return;
+    }
+
+    data.slice(0,3).forEach(h => {
+      // Add Marker to Map
+      L.marker([h.lat, h.lon]).addTo(map).bindPopup(h.name);
+
+      // Append Card to Panel
+      listDiv.innerHTML += `
+      <div class="card">
+        <h4 onclick="toggleWebsite(this)">${h.name}</h4>
+        <div class="website-box" style="display:none">
+          ${h.website && h.website !== "-"
+          ? `<a href="${h.website}" target="_blank">🌐 Visit Website</a>`
+          : `<small>🌐 Website not available</small>`}
+        </div>
+        <small>${h.address}, ${h.city}</small><br>
+        <small>📞 ${h.contact}</small><br>
+        <small>📍 ${h.distance} km away</small>
+        <button class="route-btn" onclick='showRoute(${JSON.stringify(h)})'>Show Route</button>
+      </div>`;
+    });
+  })
+  .catch(err => console.error("Error:", err));
+}
+function showRoute(h){
+  routePanel.style.display="block";
+  routeText.innerHTML="Loading...";
+  if(routeLine) map.removeLayer(routeLine);
+
+  fetch("/route",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      start_lat:userLat,
+      start_lon:userLon,
+      end_lat:h.lat,
+      end_lon:h.lon
+    })
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    routeText.innerHTML=
+      `<b>From:</b> ${d.from}<br><br>
+       <b>To:</b> ${d.to}<br><br>
+       <b>Distance:</b> ${d.distance} km`;
+
+    routeLine=L.polyline(d.coords,{
+      color:"#0984e3",
+      weight:6
+    }).addTo(map);
+
+    map.fitBounds(routeLine.getBounds());
+  });
+}
+
+function back(){
+  routePanel.style.display="none";
+  if(routeLine) map.removeLayer(routeLine);
+}
+
+function toggleWebsite(el){
+  const box=el.nextElementSibling;
+  box.style.display=box.style.display==="none"?"block":"none";
+}
+</script>
+
+</body>
+</html>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Heal Visualizer – Nearby Hospitals</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<style>
+:root{
+  --primary:#00b894;
+  --secondary:#0984e3;
+  --bg:#f4ffff;
+}
+
+body{
+  margin:0;
+  font-family:Segoe UI, Arial;
+  background:var(--bg);
+}
+
+/* HEADER */
+#top{
+  background:linear-gradient(90deg,var(--primary),var(--secondary));
+  color:white;
+  padding:16px 24px;
+}
+#top h2{margin:0;}
+#top small{opacity:.9}
+
+/* CONTROLS */
+#controls{
+  padding:12px 20px;
+  background:white;
+  display:flex;
+  gap:10px;
+  align-items:center;
+  border-bottom:1px solid #ddd;
+}
+
+button{
+  padding:8px 14px;
+  border:none;
+  border-radius:6px;
+  background:var(--primary);
+  color:white;
+  cursor:pointer;
+  font-weight:600;
+}
+button:hover{opacity:.9}
+
+input{
+  padding:7px;
+  width:130px;
+  border-radius:5px;
+  border:1px solid #ccc;
+}
+
+/* LAYOUT */
+#container{
+  display:flex;
+  height:calc(100vh - 130px);
+}
+#map{flex:2}
+#panel{
+  flex:1;
+  background:white;
+  padding:14px;
+  overflow:auto;
+  border-left:4px solid var(--primary);
+}
+
+/* HOSPITAL CARD */
+.card{
+  background:#fff;
+  border-radius:10px;
+  padding:12px;
+  margin-bottom:14px;
+  box-shadow:0 4px 12px rgba(0,0,0,.08);
+  transition:.2s;
+}
+.card:hover{
+  transform:translateY(-2px);
+}
+
+.card h4{
+  margin:0;
+  color:var(--primary);
+  cursor:pointer;
+}
+
+.website-box{
+  margin:6px 0;
+}
+
+.website-box a{
+  color:var(--secondary);
+  text-decoration:none;
+  font-weight:600;
+}
+
+.route-btn{
+  margin-top:8px;
+  width:100%;
+  background:var(--secondary);
+}
+
+/* ROUTE PANEL */
+#routePanel{
+  background:#f9ffff;
+  border-radius:10px;
+  padding:14px;
+  box-shadow:0 4px 12px rgba(0,0,0,.1);
+}
+
+#routePanel h3{
+  margin-top:0;
+  color:var(--secondary);
+}
+
+.back-btn{
+  background:#555;
+  margin-top:10px;
+  width:100%;
+}
+</style>
+</head>
+
+<body>
+
+<div id="top">
+  <h2>🩺 Heal Visualizer</h2>
+  <small>Smart Nearby Hospital & Route Finder</small>
+</div>
+
+<div id="controls">
+  <input id="place" placeholder="Enter place / area / city" style="width:220px">
+<button onclick="usePlace()">🔍 Search Place</button>
+</div>
+
+<div id="container">
+  <div id="map"></div>
+
+  <div id="panel">
+    <h3>Nearby Hospitals</h3>
+    <div id="list"></div>
+
+    <div id="routePanel" style="display:none; border-top:2px solid #00b894; margin-top:10px;">
+      <h3>🚗 Route Details</h3>
+      <p id="routeText">Loading...</p>
+      <button class="back-btn" onclick="back()">⬅ Back to Hospitals</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+let map,userLat,userLon,routeLine;
+
+function initMap(lat,lon){
+  if(map) map.remove();
+  map=L.map('map').setView([lat,lon],13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+  L.marker([lat,lon]).addTo(map).bindPopup("You are here").openPopup();
+}
+
+function useLive(){
+    navigator.geolocation.getCurrentPosition(
+        pos => {
+            userLat = pos.coords.latitude;
+            userLon = pos.coords.longitude;
+
+            // Accuracy check
+            if(pos.coords.accuracy > 2000){
+                alert("Location accuracy is low. Please search place manually.");
+                return;
+            }
+
+            initMap(userLat, userLon);
+            fetchHospitals();
+        },
+        () => alert("Live location failed. Use place search."),
+        { enableHighAccuracy:true, timeout:10000 }
+    );
+}
+
+
+function useManual(){
+  userLat=parseFloat(lat.value);
+  userLon=parseFloat(lon.value);
+  initMap(userLat,userLon);
+  fetchHospitals();
+}
+
+function usePlace(){
+    const place = document.getElementById("place").value;
+    if(!place){
+        alert("Enter a place name");
+        return;
+    }
+
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${place}`)
+    .then(res => res.json())
+    .then(data => {
+        if(data.length === 0){
+            alert("Place not found");
+            return;
+        }
+
+        userLat = parseFloat(data[0].lat);
+        userLon = parseFloat(data[0].lon);
+
+        initMap(userLat, userLon);
+        fetchHospitals();
+    });
+}
+
+
+function fetchHospitals() {
+  const listDiv = document.getElementById("list"); // Explicitly define list
+  const routePanel = document.getElementById("routePanel");
+ 
+  listDiv.style.display = "block";
+  routePanel.style.display = "none";
+
+  fetch("/visualize", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lat: userLat, lon: userLon })
+  })
+  .then(r => r.json())
+  .then(data => {
+    listDiv.innerHTML = ""; // Clear existing content
+
+    if (data.length === 0) {
+      listDiv.innerHTML = "<p>No hospitals found nearby.</p>";
+      return;
+    }
+
+    data.slice(0,3).forEach(h => {
+      // Add Marker to Map
+      L.marker([h.lat, h.lon]).addTo(map).bindPopup(h.name);
+
+      // Append Card to Panel
+      listDiv.innerHTML += `
+      <div class="card">
+        <h4 onclick="toggleWebsite(this)">${h.name}</h4>
+        <div class="website-box" style="display:none">
+          ${h.website && h.website !== "-"
+          ? `<a href="${h.website}" target="_blank">🌐 Visit Website</a>`
+          : `<small>🌐 Website not available</small>`}
+        </div>
+        <small>${h.address}, ${h.city}</small><br>
+        <small>📞 ${h.contact}</small><br>
+        <small>📍 ${h.distance} km away</small>
+        <button class="route-btn" onclick='showRoute(${JSON.stringify(h)})'>Show Route</button>
+      </div>`;
+    });
+  })
+  .catch(err => console.error("Error:", err));
+}
+function showRoute(h){
+  routePanel.style.display="block";
+  routeText.innerHTML="Loading...";
+  if(routeLine) map.removeLayer(routeLine);
+
+  fetch("/route",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      start_lat:userLat,
+      start_lon:userLon,
+      end_lat:h.lat,
+      end_lon:h.lon
+    })
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    routeText.innerHTML=
+      `<b>From:</b> ${d.from}<br><br>
+       <b>To:</b> ${d.to}<br><br>
+       <b>Distance:</b> ${d.distance} km`;
+
+    routeLine=L.polyline(d.coords,{
+      color:"#0984e3",
+      weight:6
+    }).addTo(map);
+
+    map.fitBounds(routeLine.getBounds());
+  });
+}
+
+function back(){
+  routePanel.style.display="none";
+  if(routeLine) map.removeLayer(routeLine);
+}
+
+function toggleWebsite(el){
+  const box=el.nextElementSibling;
+  box.style.display=box.style.display==="none"?"block":"none";
+}
+</script>
+
+</body>
+</html>
+>>>>>>> 07cab6649c4bdb8b053dba20e02ddbbdbe3112a2

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Health Facts Hub | HealApp</title>
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #eaf3fb;
+      margin: 0;
+      padding: 0;
+    }
+
+    .header {
+      background-color: #0077b6;
+      color: white;
+      text-align: center;
+      padding: 25px;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .section-title {
+      text-align: center;
+      margin: 30px 0 10px;
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .facts-container, .websites-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 20px;
+      gap: 20px;
+    }
+
+    .fact-box, .website-box {
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 280px;
+      font-size: 16px;
+      text-align: center;
+      transition: transform 0.2s;
+      text-decoration: none;
+      color: #000;
+    }
+
+    .fact-box:hover, .website-box:hover {
+      transform: scale(1.03);
+    }
+
+    .trusted-sites {
+      text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+      color: #222;
+      margin-top: 50px;
+    }
+
+    /* Specific colored fact boxes */
+    .serotonin { background-color: #ffe0b2; }
+    .dopamine  { background-color: #e0f7fa; }
+    .mood      { background-color: #fce4ec; }
+    .sleep     { background-color: #ede7f6; }
+    .exercise  { background-color: #fff9c4; }
+    .chocolate { background-color: #f3e5f5; }
+
+    .website-box {
+      background-color: #d9f0ff;
+      font-weight: bold;
+    }
+
+    .website-box:hover {
+      background-color: #bce0fc;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">Health Facts Hub</div>
+
+  <div class="section-title">Quick Health Facts You Should Know</div>
+  <div class="facts-container">
+
+    <div class="fact-box mood">Bananas can boost mood due to their high levels of tryptophan, which converts into serotonin.</div>
+    <div class="fact-box">Drinking enough water daily improves brain function and energy levels.</div>
+    <div class="fact-box exercise">Regular walking reduces the risk of heart disease and helps burn calories.</div>
+    <div class="fact-box">Laughter boosts the immune system and reduces stress hormones.</div>
+    <div class="fact-box sleep">A lack of sleep increases the risk of obesity and diabetes.</div>
+    <div class="fact-box chocolate">Dark chocolate (in moderation) can improve brain function and heart health.</div>
+    <div class="fact-box">Leafy greens like spinach are rich in iron and improve blood circulation.</div>
+    <div class="fact-box">Deep breathing exercises can help reduce anxiety and stress naturally.</div>
+    <div class="fact-box dopamine">Dopamine plays a key role in motivation and reward. Listening to music or achieving small goals can boost dopamine levels.</div>
+    <div class="fact-box serotonin">Serotonin helps regulate mood, sleep, and digestion. Sunlight exposure and exercise naturally boost serotonin levels.</div>
+  </div>
+
+  <div class="trusted-sites">Trusted Health Research & Article Sites</div>
+  <div class="websites-container">
+    <a href="https://www.who.int" target="_blank" class="website-box">World Health Organization (WHO)</a>
+    <a href="https://www.webmd.com" target="_blank" class="website-box">WebMD</a>
+    <a href="https://www.mayoclinic.org" target="_blank" class="website-box">Mayo Clinic</a>
+    <a href="https://www.nih.gov" target="_blank" class="website-box">National Institutes of Health (NIH)</a>
+    <a href="https://www.cdc.gov" target="_blank" class="website-box">Centers for Disease Control (CDC)</a>
+    <a href="https://www.healthline.com" target="_blank" class="website-box">Healthline</a>
+    <a href="https://www.medicalnewstoday.com" target="_blank" class="website-box">Medical News Today</a>
+    <a href="https://www.ncbi.nlm.nih.gov" target="_blank" class="website-box">NCBI (PubMed)</a>
+  </div>
+</body>
+</html>

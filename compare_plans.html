@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Compare Plans</title>
+<style>
+body{font-family:Arial;background:#f5f5f5;margin:0;padding:0;}
+header{background:#4caf50;color:white;text-align:center;padding:20px;}
+table{width:90%;margin:20px auto;border-collapse:collapse;background:white;border-radius:10px;overflow:hidden;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
+th,td{border:1px solid #ddd;padding:10px;text-align:center;}
+th{background:#4caf50;color:white;}
+</style>
+</head>
+<body>
+<header><h1>Compare Insurance Plans</h1></header>
+<table>
+<tr>
+  <th>Feature</th>
+  {% for plan in plans %}<th>{{ plan.name }}</th>{% endfor %}
+</tr>
+<tr><td>Premium</td>{% for plan in plans %}<td>{{ plan.premium }}</td>{% endfor %}</tr>
+<tr><td>Cover</td>{% for plan in plans %}<td>{{ plan.cover }}</td>{% endfor %}</tr>
+<tr><td>Waiting</td>{% for plan in plans %}<td>{{ plan.waiting }}</td>{% endfor %}</tr>
+<tr><td>Copay</td>{% for plan in plans %}<td>{{ plan.copay }}</td>{% endfor %}</tr>
+</table>
+</body>
+</html>

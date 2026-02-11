@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Health Encyclopedia</title>
+
+    <style>
+        body{
+            font-family: Arial;
+            background:#f2f7f4;
+            margin:0;
+            padding:0;
+            text-align:center;
+        }
+
+        .header{
+            background:#0a7f5a;
+            color:white;
+            padding:20px;
+            font-size:28px;
+            font-weight:bold;
+        }
+
+        .search-box{
+            margin:40px;
+        }
+
+        input{
+            padding:12px;
+            width:280px;
+            border-radius:8px;
+            border:1px solid #ccc;
+            font-size:16px;
+        }
+
+        button{
+            padding:12px 18px;
+            background:#0a7f5a;
+            color:white;
+            border:none;
+            border-radius:8px;
+            cursor:pointer;
+        }
+
+        .card{
+            max-width:650px;
+            margin:20px auto;
+            background:white;
+            padding:20px;
+            border-radius:15px;
+            box-shadow:0 0 10px rgba(0,0,0,0.1);
+            text-align:left;
+        }
+
+        .card img{
+            width:100%;
+            border-radius:12px;
+            margin-bottom:15px;
+        }
+
+        .title{
+            font-size:24px;
+            font-weight:bold;
+            color:#0a7f5a;
+        }
+
+        .summary{
+            margin-top:10px;
+            line-height:1.6;
+        }
+
+        .link{
+            margin-top:15px;
+        }
+    </style>
+</head>
+
+
+<body>
+
+<div class="header">
+    📚 Health Encyclopedia
+</div>
+
+<div class="search-box">
+    <input id="searchInput" placeholder="Search disease or symptom...">
+    <button onclick="searchWiki()">Search</button>
+</div>
+
+<div id="result"></div>
+
+
+<script>
+function searchWiki(){
+
+    const query = document.getElementById("searchInput").value.trim();
+
+    if(!query){
+        alert("Enter something");
+        return;
+    }
+
+    document.getElementById("result").innerHTML = "Loading...";
+
+    fetch(`/encyclopedia/search?q=${query}`)
+.then(res => res.json())
+.then(data => {
+
+    if(data.error){
+        result.innerHTML = data.error;
+        return;
+    }
+
+    result.innerHTML = `
+        <h2>${data.title}</h2>
+
+        <img src="${data.image}" style="width:200px;border-radius:10px">
+
+        <p>${data.summary}</p>
+
+        <hr>
+
+        <div class="wiki-content">
+            ${data.content}
+        </div>
+
+        <br>
+        <a href="${data.link}" target="_blank">Read full on Wikipedia →</a>
+    `;
+});
+
+}
+</script>
+
+</body>
+</html>

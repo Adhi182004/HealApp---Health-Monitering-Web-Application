@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Financial Tools</title>
+<style>
+body{font-family:Arial;background:#f5f5f5;margin:0;padding:0;}
+header{background:#2196f3;color:white;text-align:center;padding:20px;}
+section{max-width:600px;margin:20px auto;background:white;padding:20px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
+.link-btn{display:block;margin:10px 0;padding:12px;text-decoration:none;color:white;text-align:center;background:#2196f3;border-radius:8px;transition:0.3s;}
+.link-btn:hover{background:#1976d2;}
+</style>
+</head>
+<body>
+<header><h1>Financial Tools Hub</h1></header>
+<section>
+<a class="link-btn" href="{{ url_for('sip_calculator') }}">📈 SIP Calculator</a>
+<a class="link-btn" href="{{ url_for('emergency_fund') }}">🛡 Emergency Fund</a>
+<a class="link-btn" href="{{ url_for('emi_calculator') }}">💰 EMI Calculator</a>
+<a class="link-btn" href="{{ url_for('investment_calculator') }}">📊 Investment Calculator</a>
+<a class="link-btn" href="{{ url_for('finance_tips') }}">💡 Finance Tips</a>
+</section>
+</body>
+</html>

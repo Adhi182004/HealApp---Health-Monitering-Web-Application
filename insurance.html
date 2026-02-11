@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Insurance Hub</title>
+  <style>
+    body{font-family:Arial;background:#f5f5f5;margin:0;padding:0;}
+    header{background:#4caf50;color:white;text-align:center;padding:20px;}
+    h1,h2{text-align:center;}
+    section{max-width:600px;margin:20px auto;background:white;padding:20px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
+    .link-btn{display:block;margin:10px 0;padding:12px;text-decoration:none;color:white;text-align:center;background:#4caf50;border-radius:8px;transition:0.3s;}
+    .link-btn:hover{background:#388e3c;}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Insurance Hub</h1>
+    <p>Access A–Z terms, policy explainer, comparison & claims</p>
+  </header>
+
+  <section>
+    <a class="link-btn" href="{{ url_for('a_z_terms') }}">📚 Insurance Dictionary A–Z</a>
+    <a class="link-btn" href="{{ url_for('policy_explainer') }}">📄 Policy Explainer</a>
+    <a class="link-btn" href="{{ url_for('compare_plans') }}">⚖ Compare Plans</a>
+    <a class="link-btn" href="{{ url_for('claim_guide') }}">📝 Claim Guide</a>
+    <a class="link-btn" href="{{ url_for('faq') }}">❓ FAQ & Learning Center</a>
+  </section>
+</body>
+</html>

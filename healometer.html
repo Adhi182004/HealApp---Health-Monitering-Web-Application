@@ -1,0 +1,525 @@
+<<<<<<< HEAD
+<!DOCTYPE html>
+<html>
+<head>
+<title>Heal-O-Meter Quiz</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+
+body{
+  font-family: 'Segoe UI';
+  background:#e0f7fa;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  margin:0;
+}
+
+.quiz-container{
+  width:550px;
+  background:white;
+  padding:30px;
+  border-radius:15px;
+  text-align:center;
+  box-shadow:0 5px 20px rgba(0,0,0,0.2);
+}
+
+.title{
+  font-size:26px;
+  color:#009879;
+  font-weight:bold;
+  margin-bottom:10px;
+}
+
+.timer{
+  font-size:20px;
+  font-weight:bold;
+  color:#e63946;
+  margin-bottom:15px;
+}
+
+.question{
+  font-size:20px;
+  color:#333;
+  margin:20px 0;
+}
+
+.options button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:10px;
+  background:#00b894;
+  color:white;
+  font-size:16px;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.options button:hover{
+  background:#009879;
+}
+
+.options button.correct{
+  background:#4caf50;
+}
+
+.options button.wrong{
+  background:#e63946;
+}
+
+.next-btn{
+  background:#0077b6;
+  color:white;
+  border:none;
+  padding:10px 20px;
+  border-radius:8px;
+  margin-top:20px;
+  cursor:pointer;
+  display:none;
+}
+
+.result-box{
+  display:none;
+}
+
+.score{
+  font-size:22px;
+  margin-top:15px;
+  color:#333;
+}
+
+.health-status{
+  font-size:20px;
+  font-weight:bold;
+  margin-top:10px;
+  color:#009879;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="quiz-container">
+
+  <div class="title">
+    <i class="fas fa-heartbeat"></i> Heal-O-Meter
+  </div>
+
+  <div class="timer">Time Left: <span id="time">5</span>s</div>
+
+  <div class="question" id="questionText"></div>
+
+  <div class="options" id="options"></div>
+
+  <button class="next-btn" id="nextBtn">Next</button>
+
+  <div class="result-box" id="resultBox">
+    <div class="score" id="scoreText"></div>
+    <div class="health-status" id="healthStatus"></div>
+  </div>
+
+</div>
+
+<!-- Sound -->
+<audio id="beep">
+  <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_7b90c7.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+
+const questions = [
+  {
+    q:"How many hours of sleep is healthy?",
+    options:["3 Hours","5 Hours","8 Hours","12 Hours"],
+    answer:2
+  },
+  {
+    q:"How much water should you drink daily?",
+    options:["1 Glass","2 Litres","5 Litres","None"],
+    answer:1
+  },
+  {
+    q:"Junk food causes?",
+    options:["Good health","Strong bones","Obesity & Diabetes","Better immunity"],
+    answer:2
+  },
+  {
+    q:"How many minutes should we exercise daily?",
+    options:["5 mins","10 mins","30 mins","No need"],
+    answer:2
+  },
+  {
+    q:"Too much screen time leads to?",
+    options:["Better Vision","Stress & Sleep Problems","Strong body","More energy"],
+    answer:1
+  }
+];
+
+let index=0;
+let score=0;
+let timeLeft=5;
+let timer;
+const beep=document.getElementById("beep");
+
+function startQuiz(){
+  showQuestion();
+  startTimer();
+}
+
+function showQuestion(){
+  document.getElementById("resultBox").style.display="none";
+  document.getElementById("nextBtn").style.display="none";
+
+  let q=questions[index];
+  document.getElementById("questionText").innerText=q.q;
+
+  let optDiv=document.getElementById("options");
+  optDiv.innerHTML="";
+
+  q.options.forEach((opt,i)=>{
+    let btn=document.createElement("button");
+    btn.innerText=opt;
+    btn.onclick=()=>checkAnswer(i,btn);
+    optDiv.appendChild(btn);
+  });
+
+  resetTimer();
+}
+
+function checkAnswer(selected,btn){
+  clearInterval(timer);
+  beep.play();
+
+  let correct=questions[index].answer;
+  let buttons=document.querySelectorAll(".options button");
+
+  buttons.forEach((b,i)=>{
+    if(i===correct) b.classList.add("correct");
+    else if(i===selected) b.classList.add("wrong");
+    b.disabled=true;
+  });
+
+  if(selected===correct) score++;
+
+  document.getElementById("nextBtn").style.display="block";
+}
+
+function next(){
+  index++;
+  if(index<questions.length) startQuiz();
+  else finishQuiz();
+}
+
+function finishQuiz(){
+  document.getElementById("questionText").innerText="Quiz Completed 🎉";
+  document.getElementById("options").innerHTML="";
+  document.getElementById("nextBtn").style.display="none";
+
+  document.getElementById("resultBox").style.display="block";
+  document.getElementById("scoreText").innerText="Your Score: "+score+" / "+questions.length;
+
+  let status="";
+
+  if(score<=2) status="You need to improve your health habits 😥";
+  else if(score==3) status="You are doing okay, but take more care 😊";
+  else status="Great! You are living a healthy life 💪";
+
+  document.getElementById("healthStatus").innerText=status;
+}
+
+function startTimer(){
+  timer=setInterval(()=>{
+    timeLeft--;
+    document.getElementById("time").innerText=timeLeft;
+
+    if(timeLeft===0){
+      clearInterval(timer);
+      beep.play();
+      document.getElementById("nextBtn").style.display="block";
+    }
+  },1000);
+}
+
+function resetTimer(){
+  clearInterval(timer);
+  timeLeft=5;
+  document.getElementById("time").innerText=timeLeft;
+  startTimer();
+}
+
+document.getElementById("nextBtn").addEventListener("click",next);
+
+startQuiz();
+</script>
+
+</body>
+</html>
+=======
+<!DOCTYPE html>
+<html>
+<head>
+<title>Heal-O-Meter Quiz</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+
+body{
+  font-family: 'Segoe UI';
+  background:#e0f7fa;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  margin:0;
+}
+
+.quiz-container{
+  width:550px;
+  background:white;
+  padding:30px;
+  border-radius:15px;
+  text-align:center;
+  box-shadow:0 5px 20px rgba(0,0,0,0.2);
+}
+
+.title{
+  font-size:26px;
+  color:#009879;
+  font-weight:bold;
+  margin-bottom:10px;
+}
+
+.timer{
+  font-size:20px;
+  font-weight:bold;
+  color:#e63946;
+  margin-bottom:15px;
+}
+
+.question{
+  font-size:20px;
+  color:#333;
+  margin:20px 0;
+}
+
+.options button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:10px;
+  background:#00b894;
+  color:white;
+  font-size:16px;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.options button:hover{
+  background:#009879;
+}
+
+.options button.correct{
+  background:#4caf50;
+}
+
+.options button.wrong{
+  background:#e63946;
+}
+
+.next-btn{
+  background:#0077b6;
+  color:white;
+  border:none;
+  padding:10px 20px;
+  border-radius:8px;
+  margin-top:20px;
+  cursor:pointer;
+  display:none;
+}
+
+.result-box{
+  display:none;
+}
+
+.score{
+  font-size:22px;
+  margin-top:15px;
+  color:#333;
+}
+
+.health-status{
+  font-size:20px;
+  font-weight:bold;
+  margin-top:10px;
+  color:#009879;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="quiz-container">
+
+  <div class="title">
+    <i class="fas fa-heartbeat"></i> Heal-O-Meter
+  </div>
+
+  <div class="timer">Time Left: <span id="time">5</span>s</div>
+
+  <div class="question" id="questionText"></div>
+
+  <div class="options" id="options"></div>
+
+  <button class="next-btn" id="nextBtn">Next</button>
+
+  <div class="result-box" id="resultBox">
+    <div class="score" id="scoreText"></div>
+    <div class="health-status" id="healthStatus"></div>
+  </div>
+
+</div>
+
+<!-- Sound -->
+<audio id="beep">
+  <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_7b90c7.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+
+const questions = [
+  {
+    q:"How many hours of sleep is healthy?",
+    options:["3 Hours","5 Hours","8 Hours","12 Hours"],
+    answer:2
+  },
+  {
+    q:"How much water should you drink daily?",
+    options:["1 Glass","2 Litres","5 Litres","None"],
+    answer:1
+  },
+  {
+    q:"Junk food causes?",
+    options:["Good health","Strong bones","Obesity & Diabetes","Better immunity"],
+    answer:2
+  },
+  {
+    q:"How many minutes should we exercise daily?",
+    options:["5 mins","10 mins","30 mins","No need"],
+    answer:2
+  },
+  {
+    q:"Too much screen time leads to?",
+    options:["Better Vision","Stress & Sleep Problems","Strong body","More energy"],
+    answer:1
+  }
+];
+
+let index=0;
+let score=0;
+let timeLeft=5;
+let timer;
+const beep=document.getElementById("beep");
+
+function startQuiz(){
+  showQuestion();
+  startTimer();
+}
+
+function showQuestion(){
+  document.getElementById("resultBox").style.display="none";
+  document.getElementById("nextBtn").style.display="none";
+
+  let q=questions[index];
+  document.getElementById("questionText").innerText=q.q;
+
+  let optDiv=document.getElementById("options");
+  optDiv.innerHTML="";
+
+  q.options.forEach((opt,i)=>{
+    let btn=document.createElement("button");
+    btn.innerText=opt;
+    btn.onclick=()=>checkAnswer(i,btn);
+    optDiv.appendChild(btn);
+  });
+
+  resetTimer();
+}
+
+function checkAnswer(selected,btn){
+  clearInterval(timer);
+  beep.play();
+
+  let correct=questions[index].answer;
+  let buttons=document.querySelectorAll(".options button");
+
+  buttons.forEach((b,i)=>{
+    if(i===correct) b.classList.add("correct");
+    else if(i===selected) b.classList.add("wrong");
+    b.disabled=true;
+  });
+
+  if(selected===correct) score++;
+
+  document.getElementById("nextBtn").style.display="block";
+}
+
+function next(){
+  index++;
+  if(index<questions.length) startQuiz();
+  else finishQuiz();
+}
+
+function finishQuiz(){
+  document.getElementById("questionText").innerText="Quiz Completed 🎉";
+  document.getElementById("options").innerHTML="";
+  document.getElementById("nextBtn").style.display="none";
+
+  document.getElementById("resultBox").style.display="block";
+  document.getElementById("scoreText").innerText="Your Score: "+score+" / "+questions.length;
+
+  let status="";
+
+  if(score<=2) status="You need to improve your health habits 😥";
+  else if(score==3) status="You are doing okay, but take more care 😊";
+  else status="Great! You are living a healthy life 💪";
+
+  document.getElementById("healthStatus").innerText=status;
+}
+
+function startTimer(){
+  timer=setInterval(()=>{
+    timeLeft--;
+    document.getElementById("time").innerText=timeLeft;
+
+    if(timeLeft===0){
+      clearInterval(timer);
+      beep.play();
+      document.getElementById("nextBtn").style.display="block";
+    }
+  },1000);
+}
+
+function resetTimer(){
+  clearInterval(timer);
+  timeLeft=5;
+  document.getElementById("time").innerText=timeLeft;
+  startTimer();
+}
+
+document.getElementById("nextBtn").addEventListener("click",next);
+
+startQuiz();
+</script>
+
+</body>
+</html>
+>>>>>>> 07cab6649c4bdb8b053dba20e02ddbbdbe3112a2

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Claim Guide</title>
+<style>
+body{font-family:Arial;background:#f5f5f5;margin:0;padding:0;}
+header{background:#4caf50;color:white;text-align:center;padding:20px;}
+section{max-width:700px;margin:20px auto;background:white;padding:20px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
+ul{list-style:none;padding:0;}
+li{background:#e8f5e9;margin:10px 0;padding:12px;border-radius:5px;}
+</style>
+</head>
+<body>
+<header><h1>Claim Guide</h1></header>
+<section>
+<h2>Step-by-Step Process</h2>
+<ul>
+{% for step in steps %}
+  <li>{{ loop.index }}. {{ step }}</li>
+{% endfor %}
+</ul>
+</section>
+</body>
+</html>
