@@ -3,7 +3,7 @@ import mysql.connector , os
 from datetime import datetime 
 
 from groq import Groq
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify , send_file
 import requests
 
 import pandas as pd
@@ -12,6 +12,9 @@ import math
 import pdfplumber
 import re
 import spacy
+
+import csv
+import io
 
 import markdown
 
@@ -125,7 +128,6 @@ def route():
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
-
 
 
 
@@ -467,6 +469,46 @@ def calculate_bmi(weight, height):
     return round(weight / (h * h), 2)
 
 
+@app.route("/recommend_food_ml", methods=["POST"])
+def recommend_food_ml():
+
+    data = request.get_json()
+
+    age = int(data["age"])
+    height = float(data["height"]) / 100
+    weight = float(data["weight"])
+
+    bmi = round(weight / (height * height), 2)
+
+    # decide cluster using BMI
+    cluster = get_cluster_by_bmi(bmi)
+
+    foods_df = df[df['cluster'] == cluster]
+
+    sample = foods_df.sample(9)
+
+    foods = []
+
+    for _, row in sample.iterrows():
+        foods.append({
+            "food": row["Food"],
+            "cal": row["Calories (kcal)"],
+            "protein": row["Protein (g)"],
+            "carbs": row["Carbohydrates (g)"]
+        })
+
+    breakfast = foods[0:3]
+    lunch = foods[3:6]
+    dinner = foods[6:9]
+
+    return jsonify({
+        "bmi": bmi,
+        "breakfast": breakfast,
+        "lunch": lunch,
+        "dinner": dinner
+    })
+
+
 def get_cluster_by_bmi(bmi):
     if bmi < 18.5:
         return 2   # high calories
@@ -512,7 +554,6 @@ def foodtips():
                                fact=fun_fact)
 
     return render_template("foodtips.html")
-
 
 
 
@@ -644,14 +685,39 @@ def sip_calculator():
         result = f"Future Value: ₹{amount:.2f}"
     return render_template("sip_calculator.html", result=result)
 
-@app.route('/finance/emergency', methods=['GET', 'POST'])
-def emergency_fund():
-    target = None
-    if request.method == 'POST':
-        monthly = float(request.form['monthly'])
-        months = int(request.form['months'])
-        target = monthly * months
-    return render_template("emergency_fund.html", target=target)
+
+@app.route("/finance/expense")
+def expense():
+    return render_template("expense.html")
+
+@app.route("/finance/download_csv", methods=["POST"])
+def download_csv():
+
+    data = request.get_json()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    writer.writerow(["Date", "Time", "Name", "Category", "Amount"])
+
+    for item in data:
+        writer.writerow([
+            item["date"],
+            item["time"],
+            item["name"],
+            item["category"],
+            item["amount"]
+        ])
+
+    output.seek(0)
+
+    return send_file(
+        io.BytesIO(output.getvalue().encode()),
+        mimetype="text/csv",
+        as_attachment=True,
+        download_name="expense_report.csv"
+    )
+
 
 @app.route('/finance/emi', methods=['GET', 'POST'])
 def emi_calculator():
@@ -683,7 +749,6 @@ def finance_tips():
     return render_template("finance_tips.html", tips=tips)
 
 
-
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),'favicon.ico', mimetype='image/vnd.microsoft.icon')
@@ -694,4 +759,6 @@ def healometer():
 
 # Run the app
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
+    
+    
