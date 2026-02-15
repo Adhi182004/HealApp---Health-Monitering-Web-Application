@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Expense Tracker | FinHealth</title>
+
+<style>
+
+:root{
+    --brand:#1e3a8a;
+    --light:#f4f7fb;
+}
+
+body{
+    font-family: Arial, sans-serif;
+    background: var(--light);
+    margin:0;
+    padding:0;
+}
+
+.header{
+    background: var(--brand);
+    color:white;
+    padding:20px;
+    text-align:center;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.container{
+    width:80%;
+    margin:30px auto;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.08);
+    margin-bottom:20px;
+}
+
+input, select{
+    padding:10px;
+    margin:5px 0;
+    width:100%;
+    border:1px solid #ccc;
+    border-radius:6px;
+}
+
+button{
+    padding:10px 15px;
+    border:none;
+    border-radius:6px;
+    background: var(--brand);
+    color:white;
+    cursor:pointer;
+    margin-top:10px;
+}
+
+button:hover{
+    opacity:0.9;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+}
+
+th{
+    background: var(--brand);
+    color:white;
+    padding:10px;
+}
+
+td{
+    padding:8px;
+    border:1px solid #ddd;
+    text-align:center;
+}
+
+.summary{
+    font-size:16px;
+    line-height:1.8;
+}
+
+.score{
+    font-size:20px;
+    font-weight:bold;
+    margin-top:10px;
+}
+
+.green{ color:green; }
+.orange{ color:orange; }
+.red{ color:red; }
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+FinHealth – Expense Tracker
+</div>
+
+<div class="container">
+
+<!-- Explanation Section -->
+<div class="card">
+<h3>What is Expense Tracker?</h3>
+<p>
+This tool helps you record your daily expenses and understand your financial health.
+Add your expenses with category and amount. The system calculates your total spending,
+savings and gives you a Financial Health Score based on your salary.
+</p>
+
+<p><b>How it works:</b></p>
+<ul>
+<li>Add expense details</li>
+<li>Total expenses are calculated automatically</li>
+<li>Enter your monthly salary</li>
+<li>System shows savings & financial score</li>
+<li>You can download full report as CSV</li>
+</ul>
+</div>
+
+<!-- Add Expense Section -->
+<div class="card">
+<h3>Add Expense</h3>
+
+<input type="text" id="name" placeholder="Expense Name">
+
+<select id="category">
+<option>Housing</option>
+<option>Food</option>
+<option>Transport</option>
+<option>Utilities</option>
+<option>Insurance</option>
+<option>Entertainment</option>
+<option>Health</option>
+<option>Other</option>
+</select>
+
+<input type="number" id="amount" placeholder="Amount">
+
+<button onclick="addExpense()">Add Expense</button>
+</div>
+
+<!-- Salary Section -->
+<div class="card">
+<h3>Financial Summary</h3>
+
+<input type="number" id="salary" placeholder="Enter Monthly Salary" oninput="calculateSummary()">
+
+<div class="summary" id="summary"></div>
+</div>
+
+<!-- Table Section -->
+<div class="card">
+<h3>Expense Records</h3>
+
+<input type="month" id="monthFilter" onchange="filterByMonth()">
+
+<button onclick="downloadCSV()">Download CSV</button>
+
+<table id="expenseTable">
+<thead>
+<tr>
+<th>Date</th>
+<th>Time</th>
+<th>Name</th>
+<th>Category</th>
+<th>Amount</th>
+<th>Delete</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+</div>
+
+</div>
+
+<script>
+
+let expenses = [];
+
+function addExpense(){
+
+    let name = document.getElementById("name").value;
+    let category = document.getElementById("category").value;
+    let amount = document.getElementById("amount").value;
+
+    if(!name || !amount){
+        alert("Fill all fields");
+        return;
+    }
+
+    let now = new Date();
+
+    let expense = {
+        date: now.toISOString().split("T")[0],
+        time: now.toTimeString().split(" ")[0],
+        name: name,
+        category: category,
+        amount: parseFloat(amount)
+    };
+
+    expenses.push(expense);
+
+    renderTable();
+    calculateSummary();
+
+    document.getElementById("name").value="";
+    document.getElementById("amount").value="";
+}
+
+function renderTable(){
+
+    let tbody = document.querySelector("#expenseTable tbody");
+    tbody.innerHTML="";
+
+    expenses.forEach((exp, index)=>{
+
+        let row = `
+        <tr>
+        <td>${exp.date}</td>
+        <td>${exp.time}</td>
+        <td>${exp.name}</td>
+        <td>${exp.category}</td>
+        <td>${exp.amount}</td>
+        <td><button onclick="deleteExpense(${index})">X</button></td>
+        </tr>
+        `;
+
+        tbody.innerHTML += row;
+    });
+}
+
+function deleteExpense(index){
+    expenses.splice(index,1);
+    renderTable();
+    calculateSummary();
+}
+
+function calculateSummary(){
+
+    let salary = parseFloat(document.getElementById("salary").value) || 0;
+
+    let total = expenses.reduce((sum, item)=> sum + item.amount, 0);
+
+    let savings = salary - total;
+    let savingPercent = salary ? (savings/salary)*100 : 0;
+
+    let score = 0;
+    let colorClass = "green";
+
+    if(savingPercent >= 30){ score = 90; colorClass="green"; }
+    else if(savingPercent >= 20){ score = 75; colorClass="green"; }
+    else if(savingPercent >= 10){ score = 60; colorClass="orange"; }
+    else if(savingPercent > 0){ score = 40; colorClass="orange"; }
+    else{ score = 20; colorClass="red"; }
+
+    document.getElementById("summary").innerHTML = `
+    <b>Total Expense:</b> ${total} <br>
+    <b>Savings:</b> ${savings} <br>
+    <b>Saving %:</b> ${savingPercent.toFixed(2)}% <br>
+    <div class="score ${colorClass}">
+        Financial Health Score: ${score} / 100
+    </div>
+    `;
+}
+
+function filterByMonth(){
+
+    let month = document.getElementById("monthFilter").value;
+    let tbody = document.querySelector("#expenseTable tbody");
+    tbody.innerHTML="";
+
+    expenses.forEach((exp, index)=>{
+        if(!month || exp.date.startsWith(month)){
+            let row = `
+            <tr>
+            <td>${exp.date}</td>
+            <td>${exp.time}</td>
+            <td>${exp.name}</td>
+            <td>${exp.category}</td>
+            <td>${exp.amount}</td>
+            <td><button onclick="deleteExpense(${index})">X</button></td>
+            </tr>
+            `;
+            tbody.innerHTML += row;
+        }
+    });
+}
+
+function downloadCSV(){
+
+    fetch("/finance/download_csv",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify(expenses)
+    })
+    .then(response => response.blob())
+    .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "expense_report.csv";
+        a.click();
+    });
+}
+
+</script>
+
+</body>
+</html>
