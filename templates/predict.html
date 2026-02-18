@@ -1,135 +1,95 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Disease Symptoms</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f1fff4;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-      padding: 30px;
-      margin: 0;
-    }
+    <title>Disease Prediction - HealApp</title>
+    <style>
+        body{
+            font-family: Arial;
+            background: linear-gradient(135deg,#e8fdf7,#ffffff);
+        }
 
-    .container {
-      background: #ffffff;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0, 128, 0, 0.2);
-      padding: 30px;
-      width: 90%;
-      max-width: 650px;
-      text-align: center;
-    }
+        h1{
+            text-align:center;
+            color:#00b894;
+        }
 
-    h2 {
-      color: #219653;
-      margin-bottom: 20px;
-      font-size: 28px;
-    }
+        .container{
+            width:90%;
+            margin:auto;
+        }
 
-    input {
-      padding: 12px;
-      width: 80%;
-      margin: 10px auto;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
+        .symptoms{
+            display:grid;
+            grid-template-columns: repeat(auto-fill,minmax(200px,1fr));
+            gap:10px;
+            max-height:400px;
+            overflow-y:auto;
+            padding:10px;
+            background:white;
+            border-radius:10px;
+            box-shadow:0 5px 15px rgba(0,0,0,0.1);
+        }
 
-    button {
-      padding: 12px 24px;
-      background: #27ae60;
-      border: none;
-      color: white;
-      font-size: 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 15px;
-      transition: 0.3s ease;
-    }
+        button{
+            background:#00b894;
+            color:white;
+            padding:10px 20px;
+            border:none;
+            border-radius:8px;
+            margin-top:15px;
+            cursor:pointer;
+        }
 
-    button:hover {
-      background: #1e874b;
-    }
-
-    .result {
-      margin-top: 20px;
-      text-align: left;
-      background: #e9f9ef;
-      border-left: 6px solid #2ecc71;
-      padding: 20px;
-      border-radius: 10px;
-      color: #14532d;
-    }
-
-    .result strong {
-      font-size: 18px;
-    }
-
-    .fun-fact-box {
-      margin-top: 30px;
-      background: #f1fff4;
-      border-left: 6px solid #66bb6a;
-      padding: 20px;
-      border-radius: 12px;
-      color: #2e7d32;
-      box-shadow: 0 0 10px rgba(0, 128, 0, 0.1);
-    }
-
-    .fun-fact-box h3 {
-      margin-bottom: 10px;
-      font-size: 20px;
-    }
-
-  </style>
+        #result{
+            margin-top:20px;
+            padding:15px;
+            background:white;
+            border-radius:10px;
+            box-shadow:0 5px 15px rgba(0,0,0,0.1);
+        }
+    </style>
 </head>
 <body>
 
-  <div class="container">
-    <h2>🩺 Disease Symptoms Predictor</h2>
-    <input type="text" id="diseaseInput" placeholder="Enter disease (e.g., cough)">
-    <br>
-    <button onclick="showSymptoms()">Show Symptoms</button>
+<h1>🩺 Disease Prediction</h1>
 
-    <div class="result" id="resultBox" style="display:none;"></div>
+<div class="container">
 
-    <div class="fun-fact-box">
-      <h3>💡 Fun Fact</h3>
-      <p>The term “influenza” came from an Italian phrase meaning "influence of the stars"! 🌟</p>
-    </div>
-  </div>
+<div class="symptoms">
+{% for symptom in symptoms %}
+<label>
+    <input type="checkbox" value="{{ symptom }}"> {{ symptom.replace("_"," ") }}
+</label>
+{% endfor %}
+</div>
 
-  <script>
-    const diseaseData = {
-      cough: "Dry throat, irritation, chest discomfort, wheezing",
-      fever: "High temperature, sweating, chills, body aches",
-      cold: "Sneezing, runny nose, sore throat, fatigue",
-      diabetes: "Frequent urination, thirst, weight loss, fatigue",
-      ulcer: "Stomach pain, nausea, bloating, weight loss",
-      malaria: "Fever, chills, sweating, muscle aches",
-      covid: "Fever, cough, loss of smell, shortness of breath",
-      obesity: "Weight gain, fatigue, shortness of breath, joint pain",
-      cholesterol: "Chest pain, dizziness, shortness of breath, fatigue",
-      acidity: "Heartburn, chest discomfort, sour taste, bloating"
-    };
+<button onclick="predictDisease()">Predict Disease</button>
 
-    function showSymptoms() {
-      const disease = document.getElementById("diseaseInput").value.toLowerCase().trim();
-      const resultBox = document.getElementById("resultBox");
+<div id="result"></div>
 
-      if (diseaseData[disease]) {
-        resultBox.style.display = "block";
-        resultBox.innerHTML = `<strong>🔍 Symptoms of ${disease.charAt(0).toUpperCase() + disease.slice(1)}:</strong><br>${diseaseData[disease]}`;
-      } else {
-        resultBox.style.display = "block";
-        resultBox.innerHTML = "Sorry, no symptoms data available for this disease. Try another.";
-      }
-    }
-  </script>
+</div>
+
+<script>
+function predictDisease(){
+
+    let selected = [];
+    document.querySelectorAll('input[type="checkbox"]:checked')
+    .forEach(cb => selected.push(cb.value));
+
+    fetch("/predict_disease",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({symptoms:selected})
+    })
+    .then(res=>res.json())
+    .then(data=>{
+        document.getElementById("result").innerHTML = `
+            <h2>Predicted Disease: ${data.disease}</h2>
+            <p>Confidence: ${data.confidence}%</p>
+        `;
+    });
+}
+</script>
 
 </body>
 </html>
