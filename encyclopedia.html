@@ -5,75 +5,146 @@
 
     <style>
         body{
-            font-family: Arial;
+            font-family: Arial, Helvetica, sans-serif;
             background:#f2f7f4;
             margin:0;
             padding:0;
-            text-align:center;
         }
 
         .header{
             background:#0a7f5a;
             color:white;
-            padding:20px;
+            padding:22px;
             font-size:28px;
             font-weight:bold;
+            text-align:center;
         }
 
         .search-box{
-            margin:40px;
+            text-align:center;
+            margin:40px 0;
         }
 
-        input{
+        .search-box input{
             padding:12px;
-            width:280px;
+            width:300px;
             border-radius:8px;
             border:1px solid #ccc;
             font-size:16px;
         }
 
-        button{
+        .search-box button{
             padding:12px 18px;
             background:#0a7f5a;
             color:white;
             border:none;
             border-radius:8px;
             cursor:pointer;
+            font-weight:bold;
+        }
+
+        .search-box button:hover{
+            background:#08694b;
         }
 
         .card{
-            max-width:650px;
-            margin:20px auto;
+            max-width:900px;
+            margin:30px auto;
             background:white;
-            padding:20px;
+            padding:30px;
             border-radius:15px;
-            box-shadow:0 0 10px rgba(0,0,0,0.1);
-            text-align:left;
-        }
-
-        .card img{
-            width:100%;
-            border-radius:12px;
-            margin-bottom:15px;
+            box-shadow:0 10px 25px rgba(0,0,0,0.15);
         }
 
         .title{
-            font-size:24px;
+            font-size:30px;
             font-weight:bold;
             color:#0a7f5a;
+            margin-bottom:20px;
+            text-align:center;
         }
 
         .summary{
-            margin-top:10px;
-            line-height:1.6;
+            font-size:17px;
+            line-height:1.8;
+            margin-bottom:25px;
+        }
+
+        .card img{
+            max-width:300px;
+            float:right;
+            margin:0 0 15px 25px;
+            border-radius:10px;
+        }
+
+        .wiki-content{
+            font-size:16px;
+            line-height:1.8;
+        }
+
+        .wiki-content h2,
+        .wiki-content h3,
+        .wiki-content h4{
+            margin-top:30px;
+            color:#0a7f5a;
+        }
+
+        .wiki-content p{
+            margin:12px 0;
+        }
+
+        .wiki-content ul{
+            padding-left:20px;
+        }
+
+        .wiki-content table{
+            width:100%;
+            border-collapse:collapse;
+            margin:20px 0;
+        }
+
+        .wiki-content th,
+        .wiki-content td{
+            border:1px solid #ddd;
+            padding:8px;
+            text-align:left;
+        }
+
+        .wiki-content img{
+            max-width:100%;
+            border-radius:8px;
+            margin:15px 0;
         }
 
         .link{
-            margin-top:15px;
+            margin-top:25px;
+            text-align:center;
+        }
+
+        .link a{
+            text-decoration:none;
+            color:#0a7f5a;
+            font-weight:bold;
+        }
+
+        hr{
+            margin:25px 0;
+        }
+
+        @media(max-width:768px){
+            .card img{
+                float:none;
+                display:block;
+                margin:0 auto 20px;
+                max-width:100%;
+            }
+
+            .search-box input{
+                width:80%;
+            }
         }
     </style>
 </head>
-
 
 <body>
 
@@ -88,7 +159,6 @@
 
 <div id="result"></div>
 
-
 <script>
 function searchWiki(){
 
@@ -99,35 +169,46 @@ function searchWiki(){
         return;
     }
 
-    document.getElementById("result").innerHTML = "Loading...";
+    const result = document.getElementById("result");
+    result.innerHTML = "<div class='card'>Loading...</div>";
 
     fetch(`/encyclopedia/search?q=${query}`)
-.then(res => res.json())
-.then(data => {
+    .then(res => res.json())
+    .then(data => {
 
-    if(data.error){
-        result.innerHTML = data.error;
-        return;
-    }
+        if(data.error){
+            result.innerHTML = "<div class='card'>" + data.error + "</div>";
+            return;
+        }
 
-    result.innerHTML = `
-        <h2>${data.title}</h2>
+        result.innerHTML = `
+        <div class="card">
 
-        <img src="${data.image}" style="width:200px;border-radius:10px">
+            <div class="title">${data.title}</div>
 
-        <p>${data.summary}</p>
+            ${data.image ? `<img src="${data.image}">` : ""}
 
-        <hr>
+            <div class="summary">
+                ${data.summary}
+            </div>
 
-        <div class="wiki-content">
-            ${data.content}
+            <hr>
+
+            <div class="wiki-content">
+                ${data.content || ""}
+            </div>
+
+            <div style="clear:both;"></div>
+
+            <div class="link">
+                <a href="${data.link}" target="_blank">
+                    Read full on Wikipedia →
+                </a>
+            </div>
+
         </div>
-
-        <br>
-        <a href="${data.link}" target="_blank">Read full on Wikipedia →</a>
-    `;
-});
-
+        `;
+    });
 }
 </script>
 
