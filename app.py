@@ -361,41 +361,55 @@ def chatbot():
 
 
 
-@app.route('/predict', methods=['GET', 'POST'])
-def predict():
-    symptoms = ""
-    disease_info = {
-        "cough": "Dry throat, chest discomfort, fatigue, wheezing",
-        "fever": "High body temperature, chills, sweating, headache",
-        "cold": "Runny nose, sneezing, sore throat, congestion",
-        "diabetes": "Frequent urination, excessive thirst, fatigue, blurry vision",
-        "hypertension": "Headache, chest pain, vision problems, irregular heartbeat",
-        "asthma": "Shortness of breath, wheezing, coughing, chest tightness",
-        "covid": "Fever, cough, loss of taste/smell, fatigue, body pain",
-        "malaria": "Fever, chills, nausea, vomiting, sweating",
-        "typhoid": "Prolonged fever, weakness, abdominal pain, headache",
-        "dengue": "High fever, rash, joint pain, bleeding gums",
-        "ulcer": "Stomach pain, bloating, heartburn, nausea",
-        "migraine": "Severe headache, nausea, sensitivity to light/sound",
-        "tuberculosis": "Cough with blood, chest pain, weight loss, night sweats",
-        "jaundice": "Yellow skin, dark urine, fatigue, abdominal pain",
-        "anemia": "Fatigue, weakness, pale skin, shortness of breath",
-        "arthritis": "Joint pain, swelling, stiffness, fatigue",
-        "cholera": "Diarrhea, dehydration, leg cramps, vomiting",
-        "measles": "Rash, fever, cough, runny nose, red eyes",
-        "flu": "Fever, chills, sore throat, muscle aches",
-        "appendicitis": "Severe abdominal pain (lower right), fever, nausea",
-        "eczema": "Itchy skin, redness, rashes, dryness",
-        "bronchitis": "Cough with mucus, fatigue, chest tightness",
-        "chickenpox": "Itchy rash, fever, tiredness, blisters",
-        "pneumonia": "Cough, fever, difficulty breathing, chest pain"
-    }
+df = pd.read_csv("HealApp---Health-Monitering-Web-Application/data/Final_Augmented_dataset_Diseases_and_Symptoms.csv")   # your large dataset
 
-    if request.method == 'POST':
-        disease = request.form['disease'].strip().lower()
-        symptoms = disease_info.get(disease, "Disease not found. Please check the spelling or try another common disease.")
+# Features and Target
+X = df.drop("diseases", axis=1)
+y = df["diseases"]
 
-    return render_template('predict.html', symptoms=symptoms)
+# Train Model
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+model = RandomForestClassifier(
+    n_estimators=20,
+    max_depth=20,
+    n_jobs=1
+)
+
+model.fit(X_train, y_train)
+
+# Store symptom names
+symptom_columns = list(X.columns)
+
+
+@app.route("/predict")
+def predict_page():
+    return render_template("predict.html", symptoms=symptom_columns)
+
+
+@app.route("/predict_disease", methods=["POST"])
+def predict_disease():
+    data = request.get_json()
+
+    selected_symptoms = data.get("symptoms", [])
+
+    # Create input vector
+    input_data = [0] * len(symptom_columns)
+
+    for symptom in selected_symptoms:
+        if symptom in symptom_columns:
+            index = symptom_columns.index(symptom)
+            input_data[index] = 1
+
+    prediction = model.predict([input_data])[0]
+
+    probability = max(model.predict_proba([input_data])[0]) * 100
+
+    return jsonify({
+        "disease": prediction,
+        "confidence": round(probability, 2)
+    })
+
 
 
 @app.route('/encyclopedia')
@@ -453,108 +467,110 @@ def encyclopedia_search():
 def healthfacts():
     return render_template('healthfacts.html')
 
+        
+
+
+@app.route('/foodtips')
+def foodtips():
+    return render_template("foodtips.html")
 
 df = pd.read_csv("HealApp---Health-Monitering-Web-Application/data/Indian_Food_Nutrition_Processed.csv")
 
-features = ['Calories (kcal)', 'Carbohydrates (g)', 'Protein (g)', 'Fats (g)', 'Fibre (g)']
-X = df[features]
+df["Food"] = df["Food"].str.lower()
 
-kmeans = KMeans(n_clusters=3, random_state=42)
-df['cluster'] = kmeans.fit_predict(X)
+df.columns = df.columns.str.strip()
 
-
-
-def calculate_bmi(weight, height):
-    h = height / 100
-    return round(weight / (h * h), 2)
-
-
-@app.route("/recommend_food_ml", methods=["POST"])
-def recommend_food_ml():
-
+@app.route("/calculate_bmi", methods=["POST"])
+def calculate_bmi():
     data = request.get_json()
 
     age = int(data["age"])
-    height = float(data["height"]) / 100
-    weight = float(data["weight"])
+    height = float(data["height"])   # in cm
+    weight = float(data["weight"])   # in kg
 
-    bmi = round(weight / (height * height), 2)
+    height_m = height / 100
+    bmi = weight / (height_m ** 2)
 
-    # decide cluster using BMI
-    cluster = get_cluster_by_bmi(bmi)
-
-    foods_df = df[df['cluster'] == cluster]
-
-    sample = foods_df.sample(9)
-
-    foods = []
-
-    for _, row in sample.iterrows():
-        foods.append({
-            "food": row["Food"],
-            "cal": row["Calories (kcal)"],
-            "protein": row["Protein (g)"],
-            "carbs": row["Carbohydrates (g)"]
-        })
-
-    breakfast = foods[0:3]
-    lunch = foods[3:6]
-    dinner = foods[6:9]
+    # Classification
+    if bmi < 18.5:
+        category = "Underweight"
+        required_calories = 2500
+    elif 18.5 <= bmi < 24.9:
+        category = "Normal"
+        required_calories = 2000
+    elif 25 <= bmi < 29.9:
+        category = "Overweight"
+        required_calories = 1700
+    else:
+        category = "Obese"
+        required_calories = 1500
 
     return jsonify({
-        "bmi": bmi,
-        "breakfast": breakfast,
-        "lunch": lunch,
-        "dinner": dinner
+        "bmi": round(bmi, 2),
+        "category": category,
+        "required_calories": required_calories
     })
 
 
-def get_cluster_by_bmi(bmi):
-    if bmi < 18.5:
-        return 2   # high calories
-    elif bmi < 25:
-        return 1   # medium
+
+@app.route("/get_food_info", methods=["POST"])
+def get_food_info():
+    data = request.get_json()
+    
+    food_name = data["food_name"].lower()
+    
+    df["Food"] = df["Food"].str.lower()
+
+    result = df[df["Food"].str.contains(food_name)]
+
+    if result.empty:
+        return jsonify({"error": "Food not found"})
+
+    food = result.iloc[0]
+
+    return jsonify({
+        "food_name": food["Food"],
+        "calories": float(food["Calories (kcal)"]),
+        "protein": float(food["Protein (g)"]),
+        "carbs": float(food["Carbohydrates (g)"]),
+        "fat": float(food["Fats (g)"])
+    })
+
+
+
+@app.route("/calculate_total", methods=["POST"])
+def calculate_total():
+    data = request.get_json()
+
+    foods = data["foods"]   # list of food items
+    required_calories = data["required_calories"]
+
+    total_calories = 0
+    total_protein = 0
+    total_carbs = 0
+    total_fat = 0
+
+    for item in foods:
+        total_calories += item["calories"]
+        total_protein += item["protein"]
+        total_carbs += item["carbs"]
+        total_fat += item["fat"]
+
+    # Compare with required calories
+    if total_calories > required_calories:
+        status = "Excess Intake"
+    elif total_calories < required_calories:
+        status = "Low Intake"
     else:
-        return 0   # low
+        status = "Perfect Intake"
 
-
-
-@app.route("/foodtips", methods=["GET", "POST"])
-def foodtips():
-
-    if request.method == "POST":
-
-        age = int(request.form['age'])
-        height = float(request.form['height'])
-        weight = float(request.form['weight'])
-
-        bmi = calculate_bmi(weight, height)
-        cluster = get_cluster_by_bmi(bmi)
-
-        foods = df[df['cluster'] == cluster]['Food'].tolist()
-        random.shuffle(foods)
-
-        breakfast = foods[:3]
-        lunch = foods[3:6]
-        dinner = foods[6:9]
-
-        fun_fact = random.choice([
-            "🍎 Balanced diet improves brain focus by 30%",
-            "🥗 Fiber helps digestion & weight control",
-            "💧 Drinking water boosts metabolism",
-            "🍚 Carbs give quick energy for the body",
-            "🥜 Protein builds muscle strength"
-        ])
-
-        return render_template("foodtips.html",
-                               bmi=bmi,
-                               breakfast=breakfast,
-                               lunch=lunch,
-                               dinner=dinner,
-                               fact=fun_fact)
-
-    return render_template("foodtips.html")
-
+    return jsonify({
+        "total_calories": round(total_calories, 2),
+        "total_protein": round(total_protein, 2),
+        "total_carbs": round(total_carbs, 2),
+        "total_fat": round(total_fat, 2),
+        "status": status
+    })
 
 
 
@@ -762,3 +778,4 @@ if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
     
     
+
