@@ -40,7 +40,7 @@ if not os.path.exists(UPLOAD_FOLDER):
 mydb = mysql.connector.connect(
     host="localhost",
     user="root",          
-    password="adhi2004",          
+    password="",          
     database="healthplan" 
 
 )
@@ -961,5 +961,6 @@ if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
     
     
+
 
 
