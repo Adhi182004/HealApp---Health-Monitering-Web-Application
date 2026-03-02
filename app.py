@@ -21,18 +21,201 @@ import markdown
 from sklearn.cluster import KMeans
 import random
 
+
+from werkzeug.utils import secure_filename
+import uuid
+
 import mysql.connector
+app=Flask(__name__)
+
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+UPLOAD_FOLDER = os.path.join(BASE_DIR,'static','uploads')
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 # MySQL connection setup
 mydb = mysql.connector.connect(
     host="localhost",
-    user="root",          # Your MySQL username
-    password="adhi2004",          # Your MySQL password (if any)
-    database="healthplan" # Your database name
-)
-mycursor = mydb.cursor()
+    user="root",          
+    password="adhi2004",          
+    database="healthplan" 
 
-app = Flask(__name__)
+)
+cursor = mydb.cursor(dictionary=True)
+
+@app.route("/record")
+def record_page():
+    cursor.execute("SELECT * FROM medical_records ORDER BY id DESC """)
+    record = cursor.fetchall()
+    return render_template("record.html",
+                       records=record,
+                       selected=None,
+                       files=None)
+    
+@app.route("/save_record", methods=["POST"])
+def save_record():
+
+    name = request.form["name"]
+    phone = request.form["phone"]
+    email = request.form["email"]
+    record_date = request.form["record_date"]
+    record_time = request.form["record_time"]
+    doctor_name = request.form["doctor_name"]
+    doctor_contact = request.form["doctor_contact"]
+    doctor_location = request.form["doctor_location"]
+    
+    share_token = str(uuid.uuid4())
+    
+    query = """
+    INSERT INTO medical_records
+    (name, phone, email, record_date, record_time,
+     doctor_name, doctor_contact, doctor_location,
+    share_token)
+    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+    """
+
+    cursor.execute(query, (
+        name, phone, email, record_date, record_time,
+        doctor_name, doctor_contact, doctor_location,
+        share_token
+    ))
+    
+    record_id = cursor.lastrowid   
+
+    files = request.files.getlist("files")
+    
+    for file in files:
+        if file and file.filename != "":
+            
+         unique_name = str(uuid.uuid4()) + "_" + secure_filename(file.filename)
+
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
+        file.save(file_path)
+
+        cursor.execute(
+            "INSERT INTO record_files (record_id, file_name) VALUES (%s, %s)",
+            (record_id, unique_name)
+        )
+
+    mydb.commit()
+    
+    return redirect(url_for("record"))
+
+
+
+# 🟢 View Record
+@app.route("/record/<int:id>")
+def view_record(id):
+    
+    cursor.execute("SELECT * FROM medical_records ORDER BY id DESC")
+    record = cursor.fetchall()
+
+    cursor.execute("SELECT * FROM record_files WHERE record_id=%s", (id,))
+    files = cursor.fetchall()
+
+    cursor.execute("SELECT * FROM medical_records WHERE id=%s", (id,))
+    selected = cursor.fetchone()
+
+    return render_template("record.html",
+                       records=record,
+                       selected=selected,
+                       files=files)
+
+
+@app.route("/edit/<int:id>")
+def edit_record(id):
+
+    cursor.execute("SELECT * FROM medical_records ORDER BY id DESC """)
+    records = cursor.fetchall()
+
+    cursor.execute("SELECT * FROM medical_records WHERE id=%s", (id,))
+    selected = cursor.fetchone()
+    
+    cursor.execute("SELECT * FROM record_files WHERE record_id=%s", (id,))
+    files = cursor.fetchall()
+
+    return render_template("record.html",
+                       records=records,
+                       selected=selected,
+                       edit_record=selected,
+                       files=files)
+
+
+@app.route("/update/<int:id>", methods=["POST"])
+def update_record(id):
+
+    name = request.form["name"]
+    phone = request.form["phone"]
+    email = request.form["email"]
+    record_date = request.form["record_date"]
+    record_time = request.form["record_time"]
+    doctor_name = request.form["doctor_name"]
+    doctor_contact = request.form["doctor_contact"]
+    doctor_location = request.form["doctor_location"]
+
+    query = """
+    UPDATE medical_records SET
+    name=%s, phone=%s, email=%s,
+    record_date=%s, record_time=%s,
+    doctor_name=%s, doctor_contact=%s,
+    doctor_location=%s
+    WHERE id=%s
+    """
+
+    cursor.execute(query, (
+        name, phone, email,
+        record_date, record_time,
+        doctor_name, doctor_contact,
+        doctor_location, id
+    ))
+
+    mydb.commit()
+    
+    
+    files = request.files.getlist("files")
+    
+    for file in files:
+        if file and file.filename != "":
+            
+         unique_name = str(uuid.uuid4()) + "_" + secure_filename(file.filename)
+
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
+        file.save(file_path)
+
+        cursor.execute(
+            "INSERT INTO record_files (record_id, file_name) VALUES (%s, %s)",
+            (id, unique_name)
+        )
+
+    mydb.commit()
+    
+    return redirect(url_for("record",id=id))
+
+
+@app.route("/delete/<int:id>")
+def delete_record(id):
+
+    cursor.execute("DELETE FROM medical_records WHERE id=%s", (id,))
+    cursor.execute("DELETE FROM record_files WHERE record_id=%s", (id,))
+    
+    mydb.commit()
+
+    return redirect(url_for("record"))
+
+
+@app.route("/share/<int:id>")
+def share_record(id):
+
+    cursor.execute("SELECT * FROM medical_records WHERE id=%s", (id,))
+    record = cursor.fetchone()
+
+    if not record:
+        return "Record not found"
+
+    return render_template("share.html", record=record)
 
 
 
@@ -778,4 +961,5 @@ if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
     
     
+
 
