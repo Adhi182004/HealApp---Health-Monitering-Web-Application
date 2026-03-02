@@ -1,108 +1,190 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Health Record - HealApp</title>
-    <style>
-        body {
-            background-color: #f0f8ff;
-            font-family: Arial, sans-serif;
-            padding: 30px;
-        }
-        h1 {
-            text-align: center;
-            color: #004080;
-        }
-        form {
-            background-color: #e6f0ff;
-            padding: 20px;
-            border-radius: 12px;
-            max-width: 500px;
-            margin: auto;
-            box-shadow: 0 0 12px rgba(0,0,0,0.2);
-        }
-        input, button {
-            display: block;
-            width: 95%;
-            padding: 10px;
-            margin: 10px auto;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-        }
-        button {
-            background-color: #004080;
-            color: white;
-            cursor: pointer;
-        }
-        table {
-            margin-top: 40px;
-            width: 100%;
-            border-collapse: collapse;
-            background-color: #ffffff;
-        }
-        th, td {
-            padding: 10px;
-            border: 1px solid #a3c2ff;
-            text-align: center;
-        }
-        th {
-            background-color: #004080;
-            color: white;
-        }
-        tr:nth-child(even) {
-            background-color: #f2f7ff;
-        }
-        .btns a {
-            margin: 0 5px;
-            padding: 6px 10px;
-            background-color: #004080;
-            color: white;
-            border-radius: 6px;
-            text-decoration: none;
-        }
-        .btns a.delete {
-            background-color: red;
-        }
-    </style>
+<title>Medical Records</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to right,#0f2027,#203a43,#2c5364);
+    margin:0;
+    padding:20px;
+    color:#333;
+}
+
+h1{
+    color:white;
+}
+
+.card{
+    background:#fff;
+    padding:20px;
+    margin-bottom:25px;
+    border-radius:15px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.2);
+}
+
+input, button{
+    width:100%;
+    padding:8px;
+    margin:6px 0;
+    border-radius:8px;
+    border:1px solid #ccc;
+}
+
+button{
+    background:#2c5364;
+    color:white;
+    border:none;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#203a43;
+}
+
+.btn{
+    display:inline-block;
+    padding:6px 10px;
+    margin-right:5px;
+    margin-top:5px;
+    background:#2c5364;
+    color:white;
+    text-decoration:none;
+    border-radius:6px;
+    font-size:14px;
+}
+
+.btn-danger{
+    background:red;
+}
+
+.record-card{
+    padding:10px;
+    border-bottom:1px solid #eee;
+}
+</style>
+
 </head>
 <body>
-    <h1>HealApp - Health Record</h1>
-    <form method="POST" action="/student">
-        <input type="hidden" name="id" value="{{ student.id if student else '' }}">
-        <input type="text" name="name" placeholder="Name" required value="{{ student.name if student else '' }}">
-        <input type="number" name="age" placeholder="Age" required value="{{ student.age if student else '' }}">
-        <input type="text" name="gender" placeholder="Gender" required value="{{ student.gender if student else '' }}">
-        <input type="text" name="bmi" placeholder="BMI" required value="{{ student.bmi if student else '' }}">
-        <input type="text" name="water" placeholder="Water Intake" required value="{{ student.water if student else '' }}">
-        <input type="text" name="calories" placeholder="Calories" required value="{{ student.calories if student else '' }}">
-        <button type="submit">{{ 'Update' if student else 'Add Record' }}</button>
-    </form>
 
-    <table>
-        <tr>
-            <th>Name</th>
-            <th>Age</th>
-            <th>Gender</th>
-            <th>BMI</th>
-            <th>Water</th>
-            <th>Calories</th>
-            <th>Used On</th>
-            <th>Action</th>
-        </tr>
-        {% for r in records %}
-        <tr>
-            <td>{{ r[1] }}</td>
-            <td>{{ r[2] }}</td>
-            <td>{{ r[3] }}</td>
-            <td>{{ r[4] }}</td>
-            <td>{{ r[5] }}</td>
-            <td>{{ r[6] }}</td>
-            <td>{{ r[7] }}</td>
-            <td class="btns">
-                <a href="/edit/{{ r[0] }}">Edit</a>
-                <a href="/delete/{{ r[0] }}" class="delete" onclick="return confirm('Are you sure?')">Delete</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
+<h1>📂 Medical Record Manager</h1>
+
+<!-- ================= FORM SECTION ================= -->
+
+<div class="card">
+<h2>
+{% if edit_record %}
+✏ Edit Record
+{% else %}
+➕ Add Record
+{% endif %}
+</h2>
+
+{% if edit_record %}
+<form action="/update/{{ edit_record.id }}" method="POST" enctype="multipart/form-data">
+{% else %}
+<form action="/save_record" method="POST" enctype="multipart/form-data">
+{% endif %}
+
+<input type="text" name="name" placeholder="Full Name"
+       value="{{ edit_record.name if edit_record else '' }}" required>
+
+<input type="text" name="phone" placeholder="Phone"
+       value="{{ edit_record.phone if edit_record else '' }}">
+
+<input type="email" name="email" placeholder="Email"
+       value="{{ edit_record.email if edit_record else '' }}">
+
+<label>Date</label>
+<input type="date" name="record_date"
+       value="{{ edit_record.record_date if edit_record else '' }}">
+
+<label>Time</label>
+<input type="time" name="record_time"
+       value="{{ edit_record.record_time if edit_record else '' }}">
+
+<h3>Doctor Details</h3>
+
+<input type="text" name="doctor_name" placeholder="Doctor Name"
+       value="{{ edit_record.doctor_name if edit_record else '' }}">
+
+<input type="text" name="doctor_contact" placeholder="Doctor Contact"
+       value="{{ edit_record.doctor_contact if edit_record else '' }}">
+
+<input type="text" name="doctor_location" placeholder="Doctor Location"
+       value="{{ edit_record.doctor_location if edit_record else '' }}">
+
+<label>Upload Prescription (PDF / Image / MP3 / MP4)</label>
+<input type="file" name="files" multiple>
+
+<button type="submit">
+{% if edit_record %}
+Update Record
+{% else %}
+Save Record
+{% endif %}
+</button>
+
+</form>
+</div>
+
+<!-- ================= SAVED RECORDS ================= -->
+
+<div class="card">
+<h2>📋 Saved Records</h2>
+
+{% for r in records %}
+<div class="record-card">
+<b>{{ r.name }}</b> 
+<br>
+<small>{{ r.record_date }} | {{ r.record_time }}</small>
+<br>
+
+<a class="btn" href="/record/{{ r.id }}">View Info</a>
+<a class="btn" href="/edit/{{ r.id }}">Edit</a>
+<a class="btn btn-danger" href="/delete/{{ r.id }}">Delete</a>
+<a class="btn" href="/share/{{ r.id }}" target="_blank">Share</a>
+
+</div>
+{% endfor %}
+
+</div>
+
+<!-- ================= DETAIL SECTION ================= -->
+
+{% if selected %}
+<div class="card">
+<h2>📄 Record Details</h2>
+
+<p><b>Name:</b> {{ selected.name }}</p>
+<p><b>Phone:</b> {{ selected.phone }}</p>
+<p><b>Email:</b> {{ selected.email }}</p>
+<p><b>Date:</b> {{ selected.record_date }}</p>
+<p><b>Time:</b> {{ selected.record_time }}</p>
+
+<h3>Doctor Details</h3>
+<p><b>Name:</b> {{ selected.doctor_name }}</p>
+<p><b>Contact:</b> {{ selected.doctor_contact }}</p>
+<p><b>Location:</b> {{ selected.doctor_location }}</p>
+
+{% if files %}
+<div class="card">
+<h3>📁 Uploaded Files</h3>
+
+<ul>
+{% for file in files %}
+    <li>
+        <a href="{{ url_for('static', filename='uploads/' + file.file_name) }}" target="_blank">
+            {{ file.file_name }}
+        </a>
+    </li>
+{% endfor %}
+</ul>
+
+{% endif %}
+</div>
+{% endif %}
+
 </body>
 </html>
