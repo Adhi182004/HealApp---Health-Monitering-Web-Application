@@ -1,29 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Insurance Hub</title>
-  <style>
-    body{font-family:Arial;background:#f5f5f5;margin:0;padding:0;}
-    header{background:#4caf50;color:white;text-align:center;padding:20px;}
-    h1,h2{text-align:center;}
-    section{max-width:600px;margin:20px auto;background:white;padding:20px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
-    .link-btn{display:block;margin:10px 0;padding:12px;text-decoration:none;color:white;text-align:center;background:#4caf50;border-radius:8px;transition:0.3s;}
-    .link-btn:hover{background:#388e3c;}
-  </style>
+<meta charset="UTF-8">
+<title>Insurance Hub — FinHealth</title>
+<style>
+:root {
+  --brand:       #00b894;
+  --brand-dark:  #009e7e;
+  --brand-light: #e6f9f4;
+  --brand-mid:   #b2ede1;
+  --bg:          #f2faf7;
+  --surface:     #ffffff;
+  --surface2:    #f7fdfb;
+  --border:      #d0ede5;
+  --text:        #0f2d25;
+  --muted:       #3d7a68;
+  --dim:         #8fbfb3;
+  --shadow:      0 2px 16px rgba(0,184,148,0.08);
+  --shadow-md:   0 6px 28px rgba(0,184,148,0.14);
+  --radius:      16px;
+  --radius-sm:   10px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Times New Roman', Times, serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+.topbar { background: var(--brand); height: 58px; display: flex; align-items: center; padding: 0 30px; box-shadow: 0 2px 12px rgba(0,184,148,0.3); position: sticky; top: 0; z-index: 100; }
+.topbar-brand { color: #fff; font-size: 1.2rem; font-weight: bold; font-style: italic; }
+.topbar-back  { margin-left: auto; color: rgba(255,255,255,0.85); font-size: 0.82rem; font-weight: bold; text-decoration: none; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); padding: 5px 14px; border-radius: 20px; transition: background 0.2s; }
+.topbar-back:hover { background: rgba(255,255,255,0.3); }
+
+.hero { background: linear-gradient(135deg, var(--brand) 0%, #00c9a7 100%); padding: 52px 24px 100px; text-align: center; position: relative; overflow: hidden; }
+.hero::before { content: ''; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4z'/%3E%3C/g%3E%3C/svg%3E"); }
+.hero-badge { display: inline-flex; align-items: center; gap: 7px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.35); color: #fff; border-radius: 20px; padding: 5px 15px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px; position: relative; }
+.hero h1 { font-size: clamp(1.9rem,4vw,2.6rem); font-weight: bold; font-style: italic; color: #fff; margin-bottom: 10px; position: relative; }
+.hero p  { font-size: 0.95rem; color: rgba(255,255,255,0.85); max-width: 520px; margin: 0 auto; line-height: 1.7; position: relative; }
+
+.hero-stats { display: flex; justify-content: center; gap: 36px; flex-wrap: wrap; margin-top: 24px; position: relative; }
+.hs     { text-align: center; }
+.hs-num { font-size: 1.6rem; font-weight: bold; color: #fff; }
+.hs-lbl { font-size: 0.72rem; color: rgba(255,255,255,0.75); font-weight: bold; text-transform: uppercase; letter-spacing: 0.08em; }
+
+.page { max-width: 860px; margin: 0 auto; padding: 0 24px 70px; }
+
+.tools-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; margin-top: -52px; position: relative; z-index: 10; }
+
+.tool-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 26px 22px; box-shadow: var(--shadow-md); text-decoration: none; color: var(--text); display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px; transition: all 0.22s; position: relative; overflow: hidden; animation: fadeUp 0.4s ease both; }
+.tool-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--brand), #00d4aa); }
+.tool-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,184,148,0.18); border-color: var(--brand-mid); }
+
+.tc-icon { width: 56px; height: 56px; border-radius: 16px; background: var(--brand-light); border: 1.5px solid var(--brand-mid); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+.tc-title { font-size: 1rem; font-weight: bold; color: var(--text); }
+.tc-desc  { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+.tc-btn { margin-top: auto; padding: 9px 20px; background: var(--brand); color: #fff; border-radius: 20px; font-size: 0.82rem; font-weight: bold; font-family: 'Times New Roman', serif; transition: background 0.2s; }
+.tool-card:hover .tc-btn { background: var(--brand-dark); }
+
+.tool-card:nth-child(2){animation-delay:0.07s;}
+.tool-card:nth-child(3){animation-delay:0.14s;}
+
+/* DISCLAIMER */
+.disclaimer { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 18px 22px; margin-top: 24px; display: flex; gap: 14px; align-items: flex-start; }
+.disc-icon { font-size: 1.3rem; flex-shrink: 0; }
+.disc-text { font-size: 0.85rem; color: var(--muted); line-height: 1.7; }
+.disc-text strong { color: var(--text); }
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+@media(max-width:640px){.tools-grid{grid-template-columns:1fr;margin-top:-28px;}.page{padding:0 14px 60px;}.hero-stats{gap:20px;}}
+</style>
 </head>
 <body>
-  <header>
-    <h1>Insurance Hub</h1>
-    <p>Access A–Z terms, policy explainer, comparison & claims</p>
-  </header>
 
-  <section>
-    <a class="link-btn" href="{{ url_for('a_z_terms') }}">📚 Insurance Dictionary A–Z</a>
-    <a class="link-btn" href="{{ url_for('policy_explainer') }}">📄 Policy Explainer</a>
-    <a class="link-btn" href="{{ url_for('compare_plans') }}">⚖ Compare Plans</a>
-    <a class="link-btn" href="{{ url_for('claim_guide') }}">📝 Claim Guide</a>
-    <a class="link-btn" href="{{ url_for('faq') }}">❓ FAQ & Learning Center</a>
-  </section>
+<div class="topbar">
+  <div class="topbar-brand">WebHeal.</div>
+  <a class="topbar-back" href="{{ url_for('finhealth') }}">← FinHealth</a>
+</div>
+
+<div class="hero">
+  <div class="hero-badge">🛡 Insurance Hub</div>
+  <h1>Insurance Hub</h1>
+  <p>Access A–Z insurance terms, understand your policy and learn how to file claims correctly.</p>
+  <div class="hero-stats">
+    <div class="hs"><div class="hs-num">A–Z</div><div class="hs-lbl">Insurance Terms</div></div>
+    <div class="hs"><div class="hs-num">3</div><div class="hs-lbl">Tools</div></div>
+    <div class="hs"><div class="hs-num">Free</div><div class="hs-lbl">No Cost</div></div>
+  </div>
+</div>
+
+<div class="page">
+  <div class="tools-grid">
+
+    <a class="tool-card" href="{{ url_for('a_z_terms') }}">
+      <div class="tc-icon">📚</div>
+      <div class="tc-title">Insurance Dictionary</div>
+      <div class="tc-desc">Full A–Z glossary of insurance terms. Understand premium, deductible, copay, exclusions and more.</div>
+      <div class="tc-btn">Open →</div>
+    </a>
+
+    <a class="tool-card" href="{{ url_for('policy_explainer') }}">
+      <div class="tc-icon">📄</div>
+      <div class="tc-title">Policy Explainer</div>
+      <div class="tc-desc">Decode your health insurance policy in plain language. Know what is covered and what is not.</div>
+      <div class="tc-btn">Open →</div>
+    </a>
+
+    <a class="tool-card" href="{{ url_for('claim_guide') }}">
+      <div class="tc-icon">📝</div>
+      <div class="tc-title">Claim Guide</div>
+      <div class="tc-desc">Step-by-step guide to filing cashless and reimbursement claims with documents checklist.</div>
+      <div class="tc-btn">Open →</div>
+    </a>
+
+  </div>
+
+  <div class="disclaimer">
+    <div class="disc-icon">ℹ️</div>
+    <div class="disc-text"><strong>Disclaimer:</strong> The information provided in Insurance Hub is for educational purposes only. Always read your actual policy document carefully and consult a licensed insurance advisor for personalized advice.</div>
+  </div>
+</div>
+
 </body>
 </html>
