@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MedFood Dashboard</title>
+  <style>
+    :root {
+      --brand:        #00b894;
+      --brand-dark:   #009e7e;
+      --brand-light:  #e6f9f4;
+      --brand-mid:    #b2ede1;
+      --brand-glow:   rgba(0,184,148,0.13);
+      --bg:           #f2faf7;
+      --surface:      #ffffff;
+      --surface2:     #f7fdfb;
+      --border:       #d0ede5;
+      --text:         #0f2d25;
+      --text-muted:   #3d7a68;
+      --text-dim:     #8fbfb3;
+      --danger:       #e74c3c;
+      --danger-light: #fff0f0;
+      --danger-mid:   #ffd6d6;
+      --warn:         #f39c12;
+      --warn-light:   #fff8e6;
+      --radius:       18px;
+      --radius-sm:    11px;
+      --shadow:       0 2px 20px rgba(0,184,148,0.08);
+      --shadow-md:    0 8px 36px rgba(0,184,148,0.14);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Times New Roman', Times, serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* TOPBAR */
+    .topbar { background: var(--brand); height: 62px; display: flex; align-items: center; padding: 0 32px; box-shadow: 0 2px 14px rgba(0,184,148,0.35); position: sticky; top: 0; z-index: 200; }
+    .topbar-brand { color: #fff; font-size: 1.35rem; font-weight: bold; font-style: italic; display: flex; align-items: center; gap: 10px; }
+    .topbar-tag { margin-left: auto; font-size: 0.78rem; color: rgba(255,255,255,0.75); letter-spacing: 0.1em; text-transform: uppercase; }
+
+    /* HERO */
+    .hero { background: linear-gradient(135deg, var(--brand) 0%, #00c9a7 100%); padding: 50px 24px 100px; text-align: center; position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4z'/%3E%3C/g%3E%3C/svg%3E"); }
+    .hero-badge { display: inline-flex; align-items: center; gap: 7px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #fff; border-radius: 20px; padding: 6px 16px; font-size: 0.76rem; font-weight: bold; letter-spacing: 0.09em; text-transform: uppercase; margin-bottom: 16px; position: relative; }
+    .hero h1 { font-size: clamp(2rem,5vw,2.8rem); font-weight: bold; font-style: italic; color: #fff; margin-bottom: 10px; position: relative; }
+    .hero h1 span { color: rgba(255,255,255,0.8); }
+    .hero p  { font-size: 1rem; color: rgba(255,255,255,0.85); max-width: 540px; margin: 0 auto; line-height: 1.7; position: relative; }
+
+    /* PAGE */
+    .page { max-width: 860px; margin: 0 auto; padding: 0 24px 80px; }
+
+    /* STATS */
+    .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-top: -54px; margin-bottom: 32px; position: relative; z-index: 10; }
+    .stat-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 22px 18px; box-shadow: var(--shadow-md); position: relative; overflow: hidden; text-align: center; }
+    .stat-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--brand), #00d4aa); }
+    .sc-icon  { font-size: 1.6rem; margin-bottom: 8px; }
+    .sc-value { font-size: 1.9rem; font-weight: bold; color: var(--text); font-style: italic; line-height: 1; }
+    .sc-label { font-size: 0.78rem; color: var(--text-muted); margin-top: 5px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* ALERTS */
+    #alertArea { margin-bottom: 24px; display: flex; flex-direction: column; gap: 10px; }
+    .alert { display: flex; align-items: center; gap: 12px; padding: 15px 20px; border-radius: var(--radius-sm); font-size: 0.95rem; font-weight: bold; border: 1.5px solid; animation: fadeDown 0.3s ease both; }
+    .alert-warn    { background: var(--warn-light);  border-color: #ffe0a0; color: #8a5e00; }
+    .alert-danger  { background: var(--danger-light); border-color: var(--danger-mid); color: var(--danger); }
+    .alert-success { background: var(--brand-light);  border-color: var(--brand-mid); color: var(--brand-dark); }
+    .alert-close   { margin-left: auto; cursor: pointer; opacity: 0.5; font-size: 1rem; }
+    .alert-close:hover { opacity: 1; }
+
+    /* PANEL */
+    .panel { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 32px 36px; box-shadow: var(--shadow); position: relative; overflow: hidden; margin-bottom: 28px; animation: fadeUp 0.5s ease both; }
+    .panel::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--brand), #00d4aa); }
+
+    .panel-title { font-size: 0.85rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.13em; color: var(--brand); margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
+    .panel-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* FORM */
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 0.88rem; font-weight: bold; color: var(--text); margin-bottom: 7px; }
+    .field-row  { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .field-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+    input[type="text"], input[type="number"], input[type="time"], input[type="date"], select {
+      width: 100%; padding: 13px 16px; background: var(--surface2); border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm); font-family: 'Times New Roman', Times, serif;
+      font-size: 0.97rem; color: var(--text); outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s; appearance: none;
+    }
+    input:focus, select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-glow); background: #fff; }
+    input::placeholder { color: var(--text-dim); }
+    .select-wrap { position: relative; }
+    .select-wrap::after { content: '▾'; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--brand); pointer-events: none; }
+
+    /* BUTTONS */
+    .btn-main { width: 100%; padding: 14px; background: var(--brand); color: #fff; border: none; border-radius: var(--radius-sm); font-family: 'Times New Roman', Times, serif; font-size: 1.05rem; font-weight: bold; cursor: pointer; transition: background 0.2s, transform 0.15s, box-shadow 0.2s; box-shadow: 0 4px 18px rgba(0,184,148,0.3); margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-main:hover { background: var(--brand-dark); transform: translateY(-1px); }
+    .btn-main:active { transform: translateY(0); }
+    .btn-main:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .btn-sm { display: inline-flex; align-items: center; gap: 5px; padding: 8px 16px; border-radius: 20px; border: none; font-family: 'Times New Roman', Times, serif; font-size: 0.85rem; font-weight: bold; cursor: pointer; transition: all 0.18s; }
+    .btn-taken { background: var(--brand-light); color: var(--brand); border: 1.5px solid var(--brand-mid); }
+    .btn-taken:hover { background: var(--brand); color: #fff; border-color: var(--brand); }
+    .btn-taken.done { background: var(--brand); color: #fff; opacity: 0.6; cursor: default; }
+    .btn-del { background: var(--danger-light); color: var(--danger); border: 1.5px solid var(--danger-mid); }
+    .btn-del:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
+
+    /* SPINNER */
+    .spinner-sm { width: 17px; height: 17px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+
+    /* MEDICINE LIST */
+    .med-list { display: flex; flex-direction: column; gap: 12px; }
+    .med-item { display: flex; align-items: center; gap: 16px; padding: 18px 22px; background: var(--surface2); border: 1.5px solid var(--border); border-radius: var(--radius-sm); transition: border-color 0.2s, opacity 0.3s; }
+    .med-item:hover { border-color: var(--brand-mid); }
+    .med-item.taken { opacity: 0.55; }
+    .med-icon { width: 46px; height: 46px; border-radius: 12px; background: var(--brand-light); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+    .med-info { flex: 1; min-width: 0; }
+    .med-name { font-size: 1.05rem; font-weight: bold; color: var(--text); }
+    .med-meta { font-size: 0.82rem; color: var(--text-muted); margin-top: 4px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .med-badge { font-size: 0.73rem; font-weight: bold; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .badge-before { background: #fff8e6; color: #b07d10; }
+    .badge-after  { background: var(--brand-light); color: var(--brand-dark); }
+    .badge-with   { background: #e8f0ff; color: #4a6cf7; }
+    .badge-low    { background: var(--warn-light); color: var(--warn); }
+    .med-actions  { display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+
+    /* MEAL TABS */
+    .meal-tabs { display: flex; gap: 10px; margin-bottom: 22px; }
+    .meal-tab { flex: 1; padding: 16px 10px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: var(--surface2); cursor: pointer; text-align: center; transition: all 0.2s; }
+    .meal-tab:hover { border-color: var(--brand); background: var(--brand-light); }
+    .meal-tab.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+    .meal-tab.done-tab { border-color: var(--brand-mid); background: var(--brand-light); }
+    .mt-icon   { font-size: 1.5rem; display: block; margin-bottom: 5px; }
+    .mt-name   { font-size: 0.92rem; font-weight: bold; display: block; }
+    .mt-status { font-size: 0.76rem; color: var(--text-dim); display: block; margin-top: 3px; }
+    .meal-tab.active .mt-status { color: rgba(255,255,255,0.8); }
+    .meal-tab.done-tab .mt-status { color: var(--brand-dark); font-weight: bold; }
+
+    /* MEAL LOG */
+    .meal-log-area { background: var(--surface2); border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 22px; margin-bottom: 20px; min-height: 110px; }
+    .meal-log-header { font-size: 0.82rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.09em; color: var(--brand); margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
+    .meal-log-count { font-size: 0.72rem; background: var(--brand); color: #fff; padding: 2px 10px; border-radius: 20px; font-weight: bold; }
+    .meal-log-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .meal-food-entry { display: flex; align-items: center; gap: 12px; padding: 13px 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; font-size: 0.92rem; animation: fadeUp 0.2s ease both; }
+    .meal-food-entry.done-entry { opacity: 0.65; }
+    .mfe-food { flex: 1; font-weight: bold; color: var(--text); }
+    .mfe-qty  { font-size: 0.78rem; color: var(--text-muted); background: var(--surface2); padding: 2px 9px; border-radius: 20px; }
+    .mfe-med  { font-size: 0.78rem; color: var(--text-muted); background: var(--brand-light); padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+    .mfe-done { font-size: 0.68rem; background: var(--brand); color: #fff; padding: 2px 8px; border-radius: 20px; font-weight: bold; }
+    .mfe-del  { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 0.95rem; padding: 3px 8px; border-radius: 6px; transition: all 0.15s; flex-shrink: 0; }
+    .mfe-del:hover { background: var(--danger-light); color: var(--danger); }
+
+    /* AI RESULT */
+    .ai-result { display: none; margin-top: 20px; background: var(--brand-light); border: 1.5px solid var(--brand-mid); border-radius: var(--radius-sm); padding: 24px; }
+    .ai-result.show { display: block; animation: fadeUp 0.3s ease both; }
+    .ai-result-label { font-size: 0.82rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.1em; color: var(--brand); margin-bottom: 10px; }
+    .ai-result-text  { font-size: 1rem; color: var(--text); line-height: 1.8; white-space: pre-wrap; }
+
+    /* EMPTY */
+    .empty { text-align: center; padding: 32px 0; color: var(--text-dim); font-size: 0.95rem; font-style: italic; }
+    .empty span { display: block; font-size: 2.2rem; margin-bottom: 10px; }
+
+    @keyframes fadeDown { from { opacity:0; transform:translateY(-14px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeUp   { from { opacity:0; transform:translateY(14px);  } to { opacity:1; transform:translateY(0); } }
+    @keyframes spin     { to { transform: rotate(360deg); } }
+
+    @media (max-width: 700px) {
+      .stats-row { grid-template-columns: repeat(2,1fr); margin-top: -30px; }
+      .field-row, .field-row3 { grid-template-columns: 1fr; }
+      .panel { padding: 22px 18px; }
+      .page  { padding: 0 14px 60px; }
+      .meal-tabs { gap: 6px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">WebHeal.</div>
+  <div class="topbar-tag">MedFood Dashboard</div>
+</div>
+
+<div class="hero">
+  <div class="hero-badge">Medicine & Meal Tracker</div>
+  <h1>MedFood <span>Dashboard</span></h1>
+  <p>Track medicines, log your meals and get AI food suggestions — all without page reloads</p>
+</div>
+
+<div class="page">
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card"><div class="sc-icon">💊</div><div class="sc-value" id="statMeds">{{ medicines|length }}</div><div class="sc-label">Today's Medicines</div></div>
+    <div class="stat-card"><div class="sc-icon">✅</div><div class="sc-value" id="statTaken">0</div><div class="sc-label">Taken Today</div></div>
+    <div class="stat-card"><div class="sc-icon">🍽</div><div class="sc-value" id="statMeals">{{ meals_count }}</div><div class="sc-label">Meals Done</div></div>
+    <div class="stat-card"><div class="sc-icon">🤖</div><div class="sc-value" id="statAI">—</div><div class="sc-label">AI Suggestions</div></div>
+  </div>
+
+  <!-- ALERTS -->
+  <div id="alertArea">
+    {% for a in alerts %}
+    <div class="alert alert-warn">
+      <span>⚠️</span> {{ a }}
+      <span class="alert-close" onclick="this.parentElement.remove()">✕</span>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- ① ADD MEDICINE -->
+  <div class="panel">
+    <div class="panel-title">➕ Add Medicine</div>
+    <div class="field">
+      <label>Medicine Name</label>
+      <input type="text" id="medName" placeholder="e.g. Metformin 500mg">
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Dosage</label><input type="text" id="medDosage" placeholder="e.g. 1 tablet"></div>
+      <div class="field"><label>Time</label><input type="time" id="medTime"></div>
+    </div>
+    <div class="field">
+      <label>Relation to Food</label>
+      <div class="select-wrap"><select id="medRelation"><option>Before Food</option><option>After Food</option><option>With Food</option></select></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Expiry Date</label><input type="date" id="medExpiry"></div>
+      <div class="field"><label>Stock (tablets)</label><input type="number" id="medStock" placeholder="e.g. 30"></div>
+    </div>
+    <button class="btn-main" id="addMedBtn" onclick="addMedicine()">
+      <span class="spinner-sm" id="addMedSpinner"></span>
+      ＋ Add Medicine
+    </button>
+  </div>
+
+  <!-- ② TODAY'S SCHEDULE -->
+  <div class="panel">
+    <div class="panel-title">📋 Today's Schedule</div>
+    <div class="med-list" id="medList">
+      {% if medicines %}
+        {% for m in medicines %}
+        <div class="med-item {% if m.taken %}taken{% endif %}" id="med-{{ m.id }}">
+          <div class="med-icon">💊</div>
+          <div class="med-info">
+            <div class="med-name">{{ m.name }}</div>
+            <div class="med-meta"><span>{{ m.time }}</span><span>{{ m.dosage }}</span></div>
+            <div style="margin-top:6px; display:flex; gap:7px; flex-wrap:wrap;">
+              <span class="med-badge {% if m.food_relation == 'Before Food' %}badge-before{% elif m.food_relation == 'After Food' %}badge-after{% else %}badge-with{% endif %}">{{ m.food_relation }}</span>
+              {% if m.stock and m.stock < 5 %}<span class="med-badge badge-low">⚠ Low Stock ({{ m.stock }})</span>{% endif %}
+            </div>
+          </div>
+          <div class="med-actions">
+            {% if not m.taken %}
+            <button class="btn-sm btn-taken" data-id="{{ m.id }}" onclick="markTaken(this.dataset.id, this)">✔ Taken</button>
+            {% else %}
+            <button class="btn-sm btn-taken done" disabled>✔ Done</button>
+            {% endif %}
+            <button class="btn-sm btn-del" data-id="{{ m.id }}" onclick="deleteMedicine(this.dataset.id, this)">🗑 Delete</button>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty"><span>💊</span>No medicines added yet</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ③ MEAL TRACKER -->
+  <div class="panel">
+    <div class="panel-title">🍽 Meal Tracker</div>
+
+    <div class="meal-tabs">
+      <div class="meal-tab active" id="tab-Breakfast" onclick="switchMeal('Breakfast', this)">
+        <span class="mt-icon">🌅</span>
+        <span class="mt-name">Breakfast</span>
+        <span class="mt-status" id="tabstatus-Breakfast">Not logged</span>
+      </div>
+      <div class="meal-tab" id="tab-Lunch" onclick="switchMeal('Lunch', this)">
+        <span class="mt-icon">☀️</span>
+        <span class="mt-name">Lunch</span>
+        <span class="mt-status" id="tabstatus-Lunch">Not logged</span>
+      </div>
+      <div class="meal-tab" id="tab-Dinner" onclick="switchMeal('Dinner', this)">
+        <span class="mt-icon">🌙</span>
+        <span class="mt-name">Dinner</span>
+        <span class="mt-status" id="tabstatus-Dinner">Not logged</span>
+      </div>
+    </div>
+
+    <!-- FOOD LOG AREA — loads from DB on page open -->
+    <div class="meal-log-area">
+      <div class="meal-log-header">
+        <span id="mealLogHeader">🌅 Breakfast — Food Log</span>
+        <span class="meal-log-count" id="mealLogCount" style="display:none;"></span>
+      </div>
+      <div class="meal-log-list" id="mealLogList">
+        <div class="empty" style="padding:10px 0;"><em>Loading…</em></div>
+      </div>
+    </div>
+
+    <!-- ADD FOOD FORM -->
+    <div style="margin-bottom:16px;">
+      <div class="field" style="margin-bottom:12px;">
+        <label>Food Item Eaten</label>
+        <input type="text" id="foodItemInput" placeholder="e.g. Rice, Dal, Chapati, Egg...">
+      </div>
+      <div class="field-row" style="margin-bottom:12px;">
+        <div class="field">
+          <label>Medicine Taken With This Meal</label>
+          <div class="select-wrap">
+            <select id="foodMedSelect">
+              <option value="">— None —</option>
+              {% for m in medicines %}<option value="{{ m.name }}">{{ m.name }}</option>{% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Quantity / Notes</label>
+          <input type="text" id="foodQtyInput" placeholder="e.g. 1 cup, medium portion">
+        </div>
+      </div>
+      <button class="btn-main" id="addFoodBtn" onclick="addFoodItem()">
+        <span class="spinner-sm" id="addFoodSpinner"></span>
+        ＋ Add Food Item
+      </button>
+    </div>
+
+    <button class="btn-main" id="markMealBtn" onclick="markMealDone()" style="background:var(--brand-dark);">
+      ✔ Mark Meal as Done
+    </button>
+  </div>
+
+<button class="btn-main"
+  onclick="window.location.href='/download_meals_csv?filter=today'"
+  style="background:var(--surface); color:var(--brand); border:1.5px solid var(--brand-mid); box-shadow:none; margin-top:10px;">
+  ⬇ Download Today's Meal Log
+</button>
+
+<button class="btn-main"
+  onclick="window.location.href='/download_meals_csv?filter=week'"
+  style="background:var(--surface); color:var(--brand); border:1.5px solid var(--brand-mid); box-shadow:none; margin-top:10px;">
+  ⬇ Download Weekly Meal Log
+</button>
+
+<button class="btn-main"
+  onclick="window.location.href='/download_meals_csv?filter=month'"
+  style="background:var(--surface); color:var(--brand); border:1.5px solid var(--brand-mid); box-shadow:none; margin-top:10px;">
+  ⬇ Download Monthly Meal Log
+</button>
+
+
+  <!-- ④ AI FOOD SUGGESTION -->
+  <div class="panel">
+    <div class="panel-title">🤖 AI Food Suggestion</div>
+    <div class="field">
+      <label>Disease / Condition</label>
+      <input type="text" id="aiDisease" placeholder="e.g. Diabetes, Hypertension, PCOS">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Medicine Relation</label>
+        <div class="select-wrap"><select id="aiRelation"><option>Before Food</option><option>After Food</option><option>With Food</option></select></div>
+      </div>
+      <div class="field">
+        <label>Medicine Name (optional)</label>
+        <input type="text" id="aiMedicine" placeholder="e.g. Metformin">
+      </div>
+    </div>
+    <button class="btn-main" id="aiBtn" onclick="getAISuggestion()">
+      <span class="spinner-sm" id="aiSpinner"></span>
+      🤖 Get AI Suggestion
+    </button>
+    <div class="ai-result" id="aiResult">
+      <div class="ai-result-label">🤖 AI Suggestion</div>
+      <div class="ai-result-text" id="aiResultText"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── STATE ─────────────────────────────────────────────────────────
+  let takenCount = document.querySelectorAll('.btn-taken.done').length;
+  let aiCount    = 0;
+  let activeMeal = 'Breakfast';
+
+  // mealData holds items loaded from DB: { Breakfast:[{id,food_name,quantity,note,status}], ... }
+  let mealData = { Breakfast: [], Lunch: [], Dinner: [] };
+
+  updateStat('statTaken', takenCount);
+
+  // ── HELPERS ───────────────────────────────────────────────────────
+  function showAlert(msg, type='success') {
+    const icons = { success:'✅', warn:'⚠️', danger:'❌' };
+    const el = document.createElement('div');
+    el.className = `alert alert-${type}`;
+    el.innerHTML = `<span>${icons[type]||'ℹ️'}</span> ${msg} <span class="alert-close" onclick="this.parentElement.remove()">✕</span>`;
+    document.getElementById('alertArea').prepend(el);
+    setTimeout(() => el.remove(), 4000);
+  }
+
+  function updateStat(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
+  function startBtn(id, sid) { const b=document.getElementById(id),s=document.getElementById(sid); if(b)b.disabled=true; if(s)s.style.display='inline-block'; }
+  function stopBtn(id, sid)  { const b=document.getElementById(id),s=document.getElementById(sid); if(b)b.disabled=false; if(s)s.style.display='none'; }
+
+  // ── LOAD MEALS FROM DB (called on page open) ──────────────────────
+  function loadMeals() {
+    fetch('/get_meals')
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) { console.error('Load meals error:', data.error); return; }
+
+      mealData = data.meals;
+
+      // Mark done tabs
+      (data.done_meals || []).forEach(mt => {
+        const tab = document.getElementById(`tab-${mt}`);
+        if (tab) {
+          tab.classList.add('done-tab');
+          document.getElementById(`tabstatus-${mt}`).textContent = '✓ Done';
+        }
+      });
+
+      // Update meal count stat
+      updateStat('statMeals', (data.done_meals || []).length);
+
+      // Update tab status for meals that have items but not done
+      ['Breakfast','Lunch','Dinner'].forEach(mt => {
+        const items = mealData[mt] || [];
+        const notDone = !data.done_meals.includes(mt);
+        if (items.length > 0 && notDone) {
+          document.getElementById(`tabstatus-${mt}`).textContent = `${items.length} item${items.length>1?'s':''}`;
+        }
+      });
+
+      // Render current active meal
+      renderMealLog();
+    })
+    .catch(err => console.error('Failed to load meals:', err));
+  }
+
+  // ── RENDER MEAL LOG (from mealData in memory — already loaded from DB) ──
+  function renderMealLog() {
+    const list   = document.getElementById('mealLogList');
+    const header = document.getElementById('mealLogHeader');
+    const count  = document.getElementById('mealLogCount');
+    const icons  = { Breakfast:'🌅', Lunch:'☀️', Dinner:'🌙' };
+
+    header.textContent = `${icons[activeMeal]} ${activeMeal} — Food Log`;
+    list.innerHTML = '';
+
+    const items = mealData[activeMeal] || [];
+
+    if (!items.length) {
+      count.style.display = 'none';
+      list.innerHTML = '<div class="empty" style="padding:10px 0;"><em>No food items logged yet for this meal</em></div>';
+      return;
+    }
+
+    count.style.display = 'inline-block';
+    count.textContent   = items.length + ' item' + (items.length > 1 ? 's' : '');
+
+    items.forEach(item => {
+      const isDone = item.status === 'Done';
+      const div = document.createElement('div');
+      div.className = `meal-food-entry${isDone ? ' done-entry' : ''}`;
+      div.id = `food-${item.id}`;
+      div.innerHTML = `
+        <span style="font-size:1rem;">🍴</span>
+        <span class="mfe-food">${item.food_name}</span>
+        ${item.quantity ? `<span class="mfe-qty">${item.quantity}</span>` : ''}
+        ${item.note    ? `<span class="mfe-med">💊 ${item.note}</span>` : ''}
+        ${isDone       ? `<span class="mfe-done">✓ Done</span>` : ''}
+        ${!isDone      ? `<button class="mfe-del" onclick="deleteFoodItem(${item.id})" title="Remove">✕</button>` : ''}`;
+      list.appendChild(div);
+    });
+  }
+
+  // ── SWITCH MEAL TAB ───────────────────────────────────────────────
+  function switchMeal(meal, el) {
+    activeMeal = meal;
+    document.querySelectorAll('.meal-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    renderMealLog();
+  }
+
+  // ── ADD FOOD ITEM → saves to DB immediately ───────────────────────
+  function addFoodItem() {
+    const food_name = document.getElementById('foodItemInput').value.trim();
+    const note      = document.getElementById('foodMedSelect').value;    // medicine
+    const quantity  = document.getElementById('foodQtyInput').value.trim();
+
+    if (!food_name) { showAlert('Please enter a food item', 'warn'); return; }
+
+    startBtn('addFoodBtn', 'addFoodSpinner');
+
+    fetch('/add_meal_item', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ meal_type: activeMeal, food_name, quantity, note })
+    })
+    .then(r => r.json())
+    .then(data => {
+      stopBtn('addFoodBtn', 'addFoodSpinner');
+      if (data.error) { showAlert(data.error, 'danger'); return; }
+
+      // Add to local mealData immediately — no need to reload page
+      if (!mealData[activeMeal]) mealData[activeMeal] = [];
+      mealData[activeMeal].push({
+        id:        data.id,
+        food_name, quantity, note,
+        status:    'Pending'
+      });
+
+      // Update tab status
+      const items = mealData[activeMeal].length;
+      const isDone = document.getElementById(`tab-${activeMeal}`).classList.contains('done-tab');
+      if (!isDone) {
+        document.getElementById(`tabstatus-${activeMeal}`).textContent = `${items} item${items>1?'s':''}`;
+      }
+
+      renderMealLog();
+
+      document.getElementById('foodItemInput').value = '';
+      document.getElementById('foodQtyInput').value  = '';
+      document.getElementById('foodMedSelect').selectedIndex = 0;
+
+      showAlert(`${food_name} added to ${activeMeal}`, 'success');
+    })
+    .catch(() => { stopBtn('addFoodBtn', 'addFoodSpinner'); showAlert('Could not save food item', 'danger'); });
+  }
+
+  // ── DELETE FOOD ITEM FROM DB ──────────────────────────────────────
+  function deleteFoodItem(id) {
+    fetch(`/delete_meal_item/${id}`, { method: 'DELETE' })
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) { showAlert(data.error, 'danger'); return; }
+
+      // Remove from local mealData
+      mealData[activeMeal] = mealData[activeMeal].filter(i => i.id !== id);
+
+      // Update tab status
+      const items = mealData[activeMeal].length;
+      const isDone = document.getElementById(`tab-${activeMeal}`).classList.contains('done-tab');
+      if (!isDone) {
+        document.getElementById(`tabstatus-${activeMeal}`).textContent =
+          items > 0 ? `${items} item${items>1?'s':''}` : 'Not logged';
+      }
+
+      renderMealLog();
+    })
+    .catch(() => showAlert('Could not delete item', 'danger'));
+  }
+
+  // ── MARK MEAL DONE ────────────────────────────────────────────────
+  function markMealDone() {
+    const items = mealData[activeMeal] || [];
+    if (!items.length) { showAlert('Add at least one food item first', 'warn'); return; }
+
+    fetch('/mark_meal_done', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ meal_type: activeMeal })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.error) { showAlert(data.error, 'warn'); return; }
+
+      // Update all items status locally
+      mealData[activeMeal].forEach(item => item.status = 'Done');
+
+      const tab = document.getElementById(`tab-${activeMeal}`);
+      tab.classList.add('done-tab');
+      document.getElementById(`tabstatus-${activeMeal}`).textContent = '✓ Done';
+
+      const doneMeals = ['Breakfast','Lunch','Dinner'].filter(mt =>
+        document.getElementById(`tab-${mt}`).classList.contains('done-tab')
+      ).length;
+      updateStat('statMeals', doneMeals);
+
+      renderMealLog();
+      showAlert(`${activeMeal} marked as done!`, 'success');
+    })
+    .catch(() => showAlert('Could not mark meal', 'danger'));
+  }
+
+  // ── ADD MEDICINE ──────────────────────────────────────────────────
+  function addMedicine() {
+    const name   = document.getElementById('medName').value.trim();
+    const dosage = document.getElementById('medDosage').value.trim();
+    const time   = document.getElementById('medTime').value;
+    const rel    = document.getElementById('medRelation').value;
+    const expiry = document.getElementById('medExpiry').value;
+    const stock  = document.getElementById('medStock').value;
+
+    if (!name) { showAlert('Please enter medicine name', 'warn'); return; }
+    startBtn('addMedBtn', 'addMedSpinner');
+
+    fetch('/add_medicine', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ name, dosage, time, relation: rel, expiry, stock })
+    })
+    .then(r => r.json())
+    .then(data => {
+      stopBtn('addMedBtn', 'addMedSpinner');
+      if (data.error) { showAlert(data.error, 'danger'); return; }
+
+      const list  = document.getElementById('medList');
+      const empty = list.querySelector('.empty'); if (empty) empty.remove();
+
+      const badgeMap = { 'Before Food':'badge-before', 'After Food':'badge-after', 'With Food':'badge-with' };
+      const div = document.createElement('div');
+      div.className = 'med-item'; div.id = `med-${data.id}`;
+      div.innerHTML = `
+        <div class="med-icon">💊</div>
+        <div class="med-info">
+          <div class="med-name">${name}</div>
+          <div class="med-meta"><span>${time||'—'}</span><span>${dosage||'—'}</span></div>
+          <div style="margin-top:6px;display:flex;gap:7px;flex-wrap:wrap;">
+            <span class="med-badge ${badgeMap[rel]||'badge-after'}">${rel}</span>
+            ${stock&&parseInt(stock)<5?`<span class="med-badge badge-low">⚠ Low Stock (${stock})</span>`:''}
+          </div>
+        </div>
+        <div class="med-actions">
+          <button class="btn-sm btn-taken" data-id="${data.id}" onclick="markTaken(this.dataset.id,this)">✔ Taken</button>
+          <button class="btn-sm btn-del"   data-id="${data.id}" onclick="deleteMedicine(this.dataset.id,this)">🗑 Delete</button>
+        </div>`;
+      list.appendChild(div);
+
+      const sel = document.getElementById('foodMedSelect');
+      const opt = document.createElement('option');
+      opt.value = name; opt.textContent = name; sel.appendChild(opt);
+
+      ['medName','medDosage','medTime','medExpiry','medStock'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('medRelation').selectedIndex = 0;
+
+      updateStat('statMeds', (parseInt(document.getElementById('statMeds').textContent)||0)+1);
+      showAlert(`${name} added successfully`, 'success');
+    })
+    .catch(() => { stopBtn('addMedBtn','addMedSpinner'); showAlert('Something went wrong', 'danger'); });
+  }
+
+  // ── MARK TAKEN ────────────────────────────────────────────────────
+  function markTaken(id, btn) {
+    fetch(`/taken/${id}`, { method:'POST', headers:{'Content-Type':'application/json'} })
+    .then(r=>r.json()).then(data => {
+      if (data.error) { showAlert(data.error, 'danger'); return; }
+      btn.textContent='✔ Done'; btn.classList.add('done'); btn.disabled=true;
+      const item=document.getElementById(`med-${id}`); if(item) item.classList.add('taken');
+      takenCount++; updateStat('statTaken', takenCount);
+      showAlert('Medicine marked as taken!', 'success');
+    }).catch(() => showAlert('Could not update', 'danger'));
+  }
+
+  // ── DELETE MEDICINE ───────────────────────────────────────────────
+  function deleteMedicine(id, btn) {
+    if (!confirm('Delete this medicine?')) return;
+    fetch(`/delete_medicine/${id}`, { method:'DELETE', headers:{'Content-Type':'application/json'} })
+    .then(r=>r.json()).then(data => {
+      if (data.error) { showAlert(data.error, 'danger'); return; }
+      const item=document.getElementById(`med-${id}`);
+      if (item) {
+        item.style.opacity='0'; item.style.transform='translateX(20px)'; item.style.transition='opacity 0.25s,transform 0.25s';
+        setTimeout(()=>{ item.remove(); const list=document.getElementById('medList'); if(!list.querySelector('.med-item')) list.innerHTML='<div class="empty"><span>💊</span>No medicines added yet</div>'; },260);
+      }
+      updateStat('statMeds', Math.max(0,(parseInt(document.getElementById('statMeds').textContent)||1)-1));
+      showAlert('Medicine deleted', 'success');
+    }).catch(() => showAlert('Could not delete', 'danger'));
+  }
+
+  // ── AI SUGGESTION ─────────────────────────────────────────────────
+  function getAISuggestion() {
+    const disease  = document.getElementById('aiDisease').value.trim();
+    const relation = document.getElementById('aiRelation').value;
+    const medicine = document.getElementById('aiMedicine').value.trim();
+
+    if (!disease) { showAlert('Please enter a disease or condition', 'warn'); return; }
+    startBtn('aiBtn', 'aiSpinner');
+    document.getElementById('aiResult').classList.remove('show');
+
+    fetch('/food_ai', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ disease, relation, medicine })
+    })
+    .then(r => r.json())
+    .then(data => {
+      stopBtn('aiBtn', 'aiSpinner');
+      if (data.error) { showAlert(data.error, 'danger'); return; }
+      document.getElementById('aiResultText').textContent = (data.suggestion || data.result || '')
+        .replace(/\*\*(.*?)\*\*/g, '$1')
+        .replace(/\*(.*?)\*/g, '$1')
+        .replace(/##\s?/g, '')
+        .replace(/#\s?/g, '');
+      document.getElementById('aiResult').classList.add('show');
+      aiCount++; updateStat('statAI', aiCount);
+    })
+    .catch(() => { stopBtn('aiBtn','aiSpinner'); showAlert('AI service unavailable', 'danger'); });
+  }
+
+  // ── PAGE LOAD — fetch today's meals from DB ───────────────────────
+  window.onload = loadMeals;
+</script>
+</body>
+</html>
