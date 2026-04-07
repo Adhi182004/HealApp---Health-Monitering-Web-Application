@@ -1,24 +1,461 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Finance Tips</title>
-<style>
-body{font-family:Arial;background:#f5f5f5;margin:0;padding:0;}
-header{background:#2196f3;color:white;text-align:center;padding:20px;}
-section{max-width:700px;margin:20px auto;background:white;padding:20px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
-ul{padding-left:20px;}
-li{margin:10px 0;background:#e3f2fd;padding:10px;border-radius:5px;}
-</style>
+  <meta charset="UTF-8">
+  <title>Financial Tips — FinHealth</title>
+  <style>
+    :root {
+      --brand:        #1e3a8a;
+      --brand-dark:   #162d6e;
+      --brand-mid:    #2d55c8;
+      --brand-light:  #eff3ff;
+      --brand-mid2:   #c7d2fe;
+      --bg:           #f4f7fb;
+      --surface:      #ffffff;
+      --surface2:     #f8faff;
+      --border:       #dde3f0;
+      --text:         #0f1f4a;
+      --text-muted:   #4a5d8a;
+      --text-dim:     #9aaac8;
+      --danger:       #e74c3c;
+      --danger-light: #fff0f0;
+      --danger-mid:   #ffd6d6;
+      --warn:         #f59e0b;
+      --warn-light:   #fffbeb;
+      --green:        #10b981;
+      --green-light:  #ecfdf5;
+      --green-mid:    #6ee7b7;
+      --purple:       #8b5cf6;
+      --purple-light: #f3f0ff;
+      --purple-mid:   #ddd6fe;
+      --radius:       16px;
+      --radius-sm:    10px;
+      --shadow:       0 2px 16px rgba(30,58,138,0.08);
+      --shadow-md:    0 6px 28px rgba(30,58,138,0.13);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Times New Roman', Times, serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* TOPBAR */
+    .topbar { background: var(--brand); height: 56px; display: flex; align-items: center; padding: 0 28px; box-shadow: 0 2px 14px rgba(30,58,138,0.35); position: sticky; top: 0; z-index: 200; }
+    .topbar-brand { color: #fff; font-size: 1.2rem; font-weight: bold; font-style: italic; }
+    .topbar-tag   { margin-left: auto; font-size: 0.75rem; color: rgba(255,255,255,0.75); letter-spacing: 0.1em; text-transform: uppercase; }
+
+    /* HERO */
+    .hero { background: linear-gradient(135deg, var(--brand) 0%, var(--brand-mid) 100%); padding: 52px 24px 90px; text-align: center; position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+    .hero-badge { display: inline-flex; align-items: center; gap: 7px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.35); color: #fff; border-radius: 20px; padding: 5px 14px; font-size: 0.75rem; font-weight: bold; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 14px; position: relative; }
+    .hero h1 { font-size: clamp(1.8rem,4vw,2.6rem); font-weight: bold; font-style: italic; color: #fff; line-height: 1.1; margin-bottom: 10px; position: relative; }
+    .hero p { font-size: 0.95rem; color: rgba(255,255,255,0.85); max-width: 540px; margin: 0 auto 24px; line-height: 1.7; position: relative; }
+    .hero-stats { display: flex; justify-content: center; gap: 32px; flex-wrap: wrap; position: relative; }
+    .hs { text-align: center; }
+    .hs-num   { font-size: 1.6rem; font-weight: bold; color: #fff; }
+    .hs-label { font-size: 0.72rem; color: rgba(255,255,255,0.75); font-weight: bold; text-transform: uppercase; letter-spacing: 0.08em; }
+
+    /* PAGE */
+    .page { max-width: 1000px; margin: 0 auto; padding: 0 24px 60px; }
+
+    /* QUICK NAV */
+    .quick-nav { display: flex; flex-wrap: wrap; gap: 10px; margin: -28px 0 32px; position: relative; z-index: 10; animation: fadeUp 0.4s ease both; }
+    .nav-chip { background: var(--surface); border: 1.5px solid var(--border); border-radius: 20px; padding: 8px 16px; font-size: 0.82rem; font-weight: bold; color: var(--text-muted); cursor: pointer; transition: all 0.18s; box-shadow: var(--shadow); text-decoration: none; display: inline-block; }
+    .nav-chip:hover { background: var(--brand); color: #fff; border-color: var(--brand); }
+
+    /* SECTION HEADING */
+    .section-head { display: flex; align-items: center; gap: 12px; margin: 40px 0 20px; animation: fadeUp 0.4s ease both; }
+    .sh-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+    .sh-icon.blue   { background: var(--brand-light); }
+    .sh-icon.green  { background: var(--green-light); }
+    .sh-icon.purple { background: var(--purple-light); }
+    .sh-icon.warn   { background: var(--warn-light); }
+    .sh-icon.red    { background: var(--danger-light); }
+    .sh-title { font-size: 1.3rem; font-weight: bold; font-style: italic; color: var(--text); }
+    .sh-sub   { font-size: 0.85rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* PANEL */
+    .panel { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow); margin-bottom: 20px; position: relative; overflow: hidden; animation: fadeUp 0.4s ease both; }
+    .panel::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--brand), var(--brand-mid)); }
+    .panel.green-panel::after  { background: linear-gradient(90deg, var(--green), #34d399); }
+    .panel.purple-panel::after { background: linear-gradient(90deg, var(--purple), #a78bfa); }
+    .panel.warn-panel::after   { background: linear-gradient(90deg, var(--warn), #fcd34d); }
+    .panel.red-panel::after    { background: linear-gradient(90deg, var(--danger), #f87171); }
+
+    .panel-title { font-size: 0.78rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.12em; color: var(--brand); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+    .panel-title.green  { color: var(--green); }
+    .panel-title.purple { color: var(--purple); }
+    .panel-title.warn   { color: var(--warn); }
+    .panel-title.red    { color: var(--danger); }
+    .panel-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* TIP ITEMS */
+    .tip-list { display: flex; flex-direction: column; gap: 12px; }
+    .tip-item { display: flex; gap: 14px; padding: 16px 18px; background: var(--surface2); border: 1.5px solid var(--border); border-radius: var(--radius-sm); transition: all 0.2s; }
+    .tip-item:hover { border-color: var(--brand-mid2); box-shadow: var(--shadow); transform: translateY(-1px); }
+    .tip-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: 1px; }
+    .tip-body { flex: 1; min-width: 0; }
+    .tip-title { font-size: 0.95rem; font-weight: bold; color: var(--text); margin-bottom: 4px; }
+    .tip-desc  { font-size: 0.85rem; color: var(--text-muted); line-height: 1.7; }
+
+    /* GREEN TIP ITEMS */
+    .tip-item.g { background: var(--green-light); border-color: var(--green-mid); }
+    .tip-item.g:hover { border-color: var(--green); }
+    .tip-item.g .tip-title { color: #065f46; }
+
+    /* PURPLE TIP ITEMS */
+    .tip-item.p { background: var(--purple-light); border-color: var(--purple-mid); }
+    .tip-item.p:hover { border-color: var(--purple); }
+    .tip-item.p .tip-title { color: #5b21b6; }
+
+    /* WARN TIP ITEMS */
+    .tip-item.w { background: var(--warn-light); border-color: #fde68a; }
+    .tip-item.w:hover { border-color: var(--warn); }
+    .tip-item.w .tip-title { color: #92400e; }
+
+    /* DANGER TIP ITEMS */
+    .tip-item.r { background: var(--danger-light); border-color: var(--danger-mid); }
+    .tip-item.r:hover { border-color: var(--danger); }
+    .tip-item.r .tip-title { color: var(--danger); }
+
+    /* TWO COLUMN GRID */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+
+    /* INVESTMENT MODEL TABLE */
+    .model-table { width: 100%; border-collapse: collapse; font-size: 0.87rem; }
+    .model-table th { background: var(--brand); color: #fff; padding: 11px 14px; text-align: left; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.07em; font-weight: bold; }
+    .model-table td { padding: 11px 14px; border-bottom: 1px solid var(--border); color: var(--text-muted); }
+    .model-table tr:last-child td { border-bottom: none; }
+    .model-table tr:nth-child(even) td { background: var(--surface2); }
+    .model-table tr:hover td { background: var(--brand-light); }
+    .tbl-wrap { border: 1.5px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 14px; }
+    .bold-td { font-weight: bold; color: var(--text); }
+
+    /* BADGE TAGS */
+    .tag { font-size: 0.68rem; font-weight: bold; padding: 2px 8px; border-radius: 20px; display: inline-block; }
+    .tag-low  { background: var(--green-light); color: #065f46; border: 1px solid var(--green-mid); }
+    .tag-mid  { background: var(--warn-light);  color: #92400e; border: 1px solid #fde68a; }
+    .tag-high { background: var(--danger-light); color: var(--danger); border: 1px solid var(--danger-mid); }
+    .tag-safe { background: var(--brand-light); color: var(--brand); border: 1px solid var(--brand-mid2); }
+
+    /* FORMULA BOX */
+    .formula-box { background: var(--brand-light); border: 1.5px solid var(--brand-mid2); border-radius: var(--radius-sm); padding: 16px 20px; margin: 12px 0; font-size: 0.9rem; }
+    .formula-label { font-size: 0.72rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.1em; color: var(--brand); margin-bottom: 6px; }
+    .formula-text  { font-size: 1rem; font-weight: bold; color: var(--text); font-style: italic; }
+    .formula-sub   { font-size: 0.82rem; color: var(--text-muted); margin-top: 4px; line-height: 1.6; }
+
+    /* HIGHLIGHT BOX */
+    .highlight { background: var(--surface2); border-left: 4px solid var(--brand); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; padding: 14px 18px; margin: 12px 0; font-size: 0.88rem; color: var(--text-muted); line-height: 1.7; }
+    .highlight.green  { border-color: var(--green); background: var(--green-light); }
+    .highlight.warn   { border-color: var(--warn);  background: var(--warn-light); }
+    .highlight.purple { border-color: var(--purple); background: var(--purple-light); }
+    .highlight strong { color: var(--text); }
+
+    /* JINJA TIPS (original feature) */
+    .jinja-list { display: flex; flex-direction: column; gap: 10px; }
+    .jinja-tip { display: flex; gap: 14px; padding: 14px 18px; background: var(--brand-light); border: 1.5px solid var(--brand-mid2); border-radius: var(--radius-sm); font-size: 0.9rem; color: var(--text-muted); line-height: 1.7; animation: fadeUp 0.3s ease both; }
+    .jinja-tip .jt-num { width: 28px; height: 28px; border-radius: 50%; background: var(--brand); color: #fff; font-size: 0.8rem; font-weight: bold; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+
+    @media (max-width: 700px) {
+      .two-col { grid-template-columns: 1fr; }
+      .page    { padding: 0 16px 48px; }
+      .quick-nav { margin-top: -16px; }
+    }
+  </style>
 </head>
 <body>
-<header><h1>Finance Tips</h1></header>
-<section>
-<ul>
-{% for tip in tips %}
-<li>{{ tip }}</li>
-{% endfor %}
-</ul>
-</section>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-brand">WebHeal.</div>
+  <div class="topbar-tag">FinHealth · Financial Tips</div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">💰 Smart Money Guide</div>
+  <h1>Financial Tips &<br>Investment Guide</h1>
+  <p>Tax saving, investment models, SIP strategies and advanced personal finance — everything for the Indian investor.</p>
+  <div class="hero-stats">
+    <div class="hs"><div class="hs-num">6</div><div class="hs-label">Sections</div></div>
+    <div class="hs"><div class="hs-num">80+</div><div class="hs-label">Tips</div></div>
+    <div class="hs"><div class="hs-num">India</div><div class="hs-label">Focused</div></div>
+    <div class="hs"><div class="hs-num">Free</div><div class="hs-label">No Ads</div></div>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- QUICK NAV -->
+  <div class="quick-nav">
+    <a class="nav-chip" href="#basics">💡 Basics</a>
+    <a class="nav-chip" href="#tax">🏛 Tax Saving</a>
+    <a class="nav-chip" href="#investment">📈 Investment Models</a>
+    <a class="nav-chip" href="#sip">🔄 SIP & MF</a>
+    <a class="nav-chip" href="#advanced">🧠 Advanced Theory</a>
+    <a class="nav-chip" href="#mistakes">⚠ Mistakes</a>
+    {% if tips %}<a class="nav-chip" href="#yourtips">📋 Your Tips</a>{% endif %}
+  </div>
+
+  <!-- ── SECTION 1: BASICS ── -->
+  <div id="basics">
+    <div class="section-head">
+      <div class="sh-icon blue">💡</div>
+      <div><div class="sh-title">Personal Finance Basics</div><div class="sh-sub">Foundation rules every Indian must know</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">💡 Core Money Rules</div>
+      <div class="tip-list">
+        <div class="tip-item g"><div class="tip-icon">📐</div><div class="tip-body"><div class="tip-title">50-30-20 Rule</div><div class="tip-desc">Spend 50% on needs (rent, food, bills), 30% on wants (dining, entertainment), 20% on savings and investments. Adapt to 60-20-20 if your city has high rent.</div></div></div>
+        <div class="tip-item"><div class="tip-icon">🛡</div><div class="tip-body"><div class="tip-title">Emergency Fund First</div><div class="tip-desc">Keep 6 months of expenses in a liquid fund or high-interest savings account before investing anywhere. This prevents panic selling during emergencies.</div></div></div>
+        <div class="tip-item"><div class="tip-icon">💳</div><div class="tip-body"><div class="tip-title">Kill Bad Debt First</div><div class="tip-desc">Credit card debt at 36–42% annual interest is wealth destruction. Pay it off before any investment. No market returns consistently beat 36% cost of debt.</div></div></div>
+        <div class="tip-item g"><div class="tip-icon">📊</div><div class="tip-body"><div class="tip-title">Net Worth Over Income</div><div class="tip-desc">Track your net worth (assets minus liabilities) monthly — not just salary. A ₹2L/month earner who saves ₹50K beats a ₹5L earner who saves nothing.</div></div></div>
+        <div class="tip-item"><div class="tip-icon">⏱</div><div class="tip-body"><div class="tip-title">Start Early — Compounding Is Real</div><div class="tip-desc">₹5,000/month from age 25 grows to ~₹3.5 Cr at 12% by age 60. Starting at 35 gives only ~₹1 Cr. 10 years costs ₹2.5 Cr.</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 2: TAX SAVING ── -->
+  <div id="tax">
+    <div class="section-head">
+      <div class="sh-icon blue">🏛</div>
+      <div><div class="sh-title">Tax Saving in India</div><div class="sh-sub">Legal ways to reduce your tax liability under IT Act</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">📋 Section 80C — ₹1.5 Lakh Deduction</div>
+      <div class="tbl-wrap">
+        <table class="model-table">
+          <thead><tr><th>Instrument</th><th>Returns</th><th>Lock-in</th><th>Risk</th></tr></thead>
+          <tbody>
+            <tr><td class="bold-td">ELSS (Mutual Fund)</td><td>12–15% (market)</td><td>3 years</td><td><span class="tag tag-high">High</span></td></tr>
+            <tr><td class="bold-td">PPF</td><td>7.1% (tax-free)</td><td>15 years</td><td><span class="tag tag-safe">Zero</span></td></tr>
+            <tr><td class="bold-td">NSC</td><td>7.7%</td><td>5 years</td><td><span class="tag tag-safe">Zero</span></td></tr>
+            <tr><td class="bold-td">Tax-Saver FD</td><td>6.5–7%</td><td>5 years</td><td><span class="tag tag-low">Low</span></td></tr>
+            <tr><td class="bold-td">NPS (Tier-I)</td><td>10–12%</td><td>Till retirement</td><td><span class="tag tag-mid">Medium</span></td></tr>
+            <tr><td class="bold-td">Home Loan Principal</td><td>Tax benefit only</td><td>—</td><td><span class="tag tag-safe">Zero</span></td></tr>
+            <tr><td class="bold-td">Life Insurance Premium</td><td>Tax benefit only</td><td>Varies</td><td><span class="tag tag-safe">Zero</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="highlight">💡 <strong>Best pick for young earners:</strong> ELSS gives highest returns with shortest lock-in. Add PPF for long-term stability. Never buy LIC ULIP just for 80C — the returns are terrible.</div>
+    </div>
+
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-title">📋 Other Sections</div>
+        <div class="tip-list">
+          <div class="tip-item"><div class="tip-icon">🏥</div><div class="tip-body"><div class="tip-title">80D — Health Insurance</div><div class="tip-desc">₹25,000 for self/family. Additional ₹25,000 for parents. If parents are senior citizens, limit is ₹50,000. Total possible: ₹75,000 deduction.</div></div></div>
+          <div class="tip-item g"><div class="tip-icon">🎓</div><div class="tip-body"><div class="tip-title">80E — Education Loan</div><div class="tip-desc">Full interest deduction on education loan for 8 years. No upper limit. Covers loans for self, spouse or children.</div></div></div>
+          <div class="tip-item"><div class="tip-icon">🏠</div><div class="tip-body"><div class="tip-title">24(b) — Home Loan Interest</div><div class="tip-desc">Up to ₹2 lakh deduction on home loan interest for self-occupied property. No limit if property is rented out.</div></div></div>
+          <div class="tip-item"><div class="tip-icon">🏦</div><div class="tip-body"><div class="tip-title">80CCD(1B) — Extra NPS</div><div class="tip-desc">Additional ₹50,000 deduction over 80C limit by investing in NPS. Total possible tax saving from NPS: ₹2 lakh.</div></div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title warn">⚖ Old vs New Tax Regime</div>
+        <div class="tip-list">
+          <div class="tip-item w"><div class="tip-icon">📊</div><div class="tip-body"><div class="tip-title">New Regime (Default from 2024)</div><div class="tip-desc">Lower slab rates. No deductions (80C, 80D etc. not available). Best for those with few investments or HRA not applicable.</div></div></div>
+          <div class="tip-item"><div class="tip-icon">📋</div><div class="tip-body"><div class="tip-title">Old Regime</div><div class="tip-desc">Higher slab rates but all deductions apply. Better if you claim 80C (₹1.5L) + 80D + HRA + Home loan interest.</div></div></div>
+          <div class="tip-item g"><div class="tip-icon">🧮</div><div class="tip-body"><div class="tip-title">Break-Even Rule</div><div class="tip-desc">If your total deductions exceed ₹3.75 lakh (for 30% bracket), old regime saves more. Calculate before choosing every year.</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 3: INVESTMENT MODELS ── -->
+  <div id="investment">
+    <div class="section-head">
+      <div class="sh-icon green">📈</div>
+      <div><div class="sh-title">Investment Models in India</div><div class="sh-sub">Proven frameworks for building wealth</div></div>
+    </div>
+
+    <div class="panel green-panel">
+      <div class="panel-title green">📈 Core Investment Instruments</div>
+      <div class="tbl-wrap">
+        <table class="model-table">
+          <thead><tr><th>Instrument</th><th>Expected Return</th><th>Risk</th><th>Horizon</th><th>Best For</th></tr></thead>
+          <tbody>
+            <tr><td class="bold-td">Direct Equity (Stocks)</td><td>15–20% (variable)</td><td><span class="tag tag-high">High</span></td><td>5+ years</td><td>Experienced investors</td></tr>
+            <tr><td class="bold-td">Equity Mutual Fund</td><td>12–15%</td><td><span class="tag tag-high">High</span></td><td>5+ years</td><td>Most investors</td></tr>
+            <tr><td class="bold-td">Index Fund (Nifty 50)</td><td>11–13%</td><td><span class="tag tag-mid">Medium</span></td><td>7+ years</td><td>Passive investors</td></tr>
+            <tr><td class="bold-td">PPF</td><td>7.1% (tax-free)</td><td><span class="tag tag-safe">Zero</span></td><td>15 years</td><td>Risk-averse investors</td></tr>
+            <tr><td class="bold-td">Debt Mutual Fund</td><td>6–8%</td><td><span class="tag tag-low">Low</span></td><td>3+ years</td><td>Short-medium term</td></tr>
+            <tr><td class="bold-td">Gold (SGB / Gold ETF)</td><td>8–10% long term</td><td><span class="tag tag-mid">Medium</span></td><td>8+ years</td><td>Hedge + diversify</td></tr>
+            <tr><td class="bold-td">Real Estate</td><td>8–12%</td><td><span class="tag tag-mid">Medium</span></td><td>10+ years</td><td>Illiquid but stable</td></tr>
+            <tr><td class="bold-td">REITs</td><td>8–10%</td><td><span class="tag tag-mid">Medium</span></td><td>5+ years</td><td>Real estate without property</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-title">🧱 Core & Satellite Model</div>
+        <div class="tip-desc" style="font-size:0.88rem; color:var(--text-muted); line-height:1.7; margin-bottom:14px;">Divide your portfolio into stable core (70–80%) and high-growth satellite (20–30%).</div>
+        <div class="tip-list">
+          <div class="tip-item g"><div class="tip-icon">🏛</div><div class="tip-body"><div class="tip-title">Core (70%) — Stability</div><div class="tip-desc">Index funds, large-cap mutual funds, PPF, debt funds. Low risk, steady compounding.</div></div></div>
+          <div class="tip-item p"><div class="tip-icon">🚀</div><div class="tip-body"><div class="tip-title">Satellite (30%) — Growth</div><div class="tip-desc">Mid-cap/small-cap funds, direct stocks, sectoral bets, international funds.</div></div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">📊 Age-Based Asset Allocation</div>
+        <div class="formula-box">
+          <div class="formula-label">Equity % Rule</div>
+          <div class="formula-text">Equity % = 100 − Your Age</div>
+          <div class="formula-sub">At 25 → 75% equity, 25% debt<br>At 45 → 55% equity, 45% debt<br>At 60 → 40% equity, 60% debt</div>
+        </div>
+        <div class="highlight">Rebalance once a year. Don't chase returns — stick to your allocation.</div>
+      </div>
+    </div>
+
+    <div class="panel purple-panel">
+      <div class="panel-title purple">🧠 Goal-Based Investing</div>
+      <div class="tbl-wrap">
+        <table class="model-table">
+          <thead><tr><th>Goal</th><th>Horizon</th><th>Instrument</th></tr></thead>
+          <tbody>
+            <tr><td class="bold-td">Emergency Fund</td><td>Immediate</td><td>Liquid Fund, Savings Account</td></tr>
+            <tr><td class="bold-td">Foreign Trip (2 years)</td><td>Short</td><td>Debt MF, FD</td></tr>
+            <tr><td class="bold-td">Car Purchase (3–4 years)</td><td>Medium</td><td>Hybrid Fund, RD</td></tr>
+            <tr><td class="bold-td">Child Education (10 years)</td><td>Long</td><td>ELSS, Equity MF, SSY</td></tr>
+            <tr><td class="bold-td">Retirement (25+ years)</td><td>Very Long</td><td>NPS, PPF, Index Fund, Equity MF</td></tr>
+            <tr><td class="bold-td">House Purchase (7 years)</td><td>Long</td><td>Equity MF + Debt MF combo</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 4: SIP & MUTUAL FUNDS ── -->
+  <div id="sip">
+    <div class="section-head">
+      <div class="sh-icon green">🔄</div>
+      <div><div class="sh-title">SIP & Mutual Fund Strategy</div><div class="sh-sub">The most powerful wealth-building tool for salaried Indians</div></div>
+    </div>
+
+    <div class="two-col">
+      <div class="panel green-panel">
+        <div class="panel-title green">🔄 How SIP Works</div>
+        <div class="formula-box">
+          <div class="formula-label">SIP Future Value</div>
+          <div class="formula-text">FV = P × [((1+r)ⁿ − 1) / r] × (1+r)</div>
+          <div class="formula-sub">P = monthly amount · r = monthly rate · n = months<br><br>₹10,000/month @ 12% for 20 years = <strong>₹98 Lakhs</strong></div>
+        </div>
+        <div class="tip-list" style="margin-top:12px;">
+          <div class="tip-item g"><div class="tip-icon">📅</div><div class="tip-body"><div class="tip-title">Never Stop SIP in Crashes</div><div class="tip-desc">Market crashes are SIP's best friend — you buy more units at lower prices. Stopping kills the compounding.</div></div></div>
+          <div class="tip-item"><div class="tip-icon">⬆</div><div class="tip-body"><div class="tip-title">Step-Up SIP Annually</div><div class="tip-desc">Increase SIP by 10% every year matching salary hike. ₹5K SIP stepped up becomes ₹5.5K → ₹6K → exponential growth.</div></div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">📊 Fund Categories</div>
+        <div class="tip-list">
+          <div class="tip-item g"><div class="tip-icon">🏔</div><div class="tip-body"><div class="tip-title">Large Cap</div><div class="tip-desc">Top 100 companies by market cap. Stable. 10–13% returns. Best for conservative equity investors. Example: HDFC Top 100.</div></div></div>
+          <div class="tip-item w"><div class="tip-icon">⚡</div><div class="tip-body"><div class="tip-title">Mid Cap</div><div class="tip-desc">101–250 rank companies. Higher risk, higher reward. 14–18% potential. Example: Nippon India Mid Cap.</div></div></div>
+          <div class="tip-item p"><div class="tip-icon">🚀</div><div class="tip-body"><div class="tip-title">Small Cap</div><div class="tip-desc">Below 250 rank. Very high risk, very high reward. 3–5 year minimum. Example: SBI Small Cap Fund.</div></div></div>
+          <div class="tip-item"><div class="tip-icon">📊</div><div class="tip-body"><div class="tip-title">Index Fund</div><div class="tip-desc">Tracks Nifty 50 or Sensex. Lowest expense ratio (0.1%). Beats most active funds over 10 years. Example: UTI Nifty 50 Index.</div></div></div>
+          <div class="tip-item g"><div class="tip-icon">⚖</div><div class="tip-body"><div class="tip-title">Hybrid / Balanced</div><div class="tip-desc">Mix of equity + debt. Lower volatility. Best for 3–5 year goals. Example: HDFC Balanced Advantage Fund.</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">🔍 How to Pick a Fund</div>
+      <div class="tip-list">
+        <div class="tip-item"><div class="tip-icon">📉</div><div class="tip-body"><div class="tip-title">Check Expense Ratio</div><div class="tip-desc">Lower is better. Active funds: under 1%. Index funds: under 0.2%. Over 2% is a red flag — avoid.</div></div></div>
+        <div class="tip-item g"><div class="tip-icon">📅</div><div class="tip-body"><div class="tip-title">Minimum 5-Year Track Record</div><div class="tip-desc">Only judge a fund by rolling returns over 5+ years — not 1-year rankings. Check if it beat the benchmark consistently.</div></div></div>
+        <div class="tip-item"><div class="tip-icon">🏦</div><div class="tip-body"><div class="tip-title">Check AUM Size</div><div class="tip-desc">Very small AUM (under ₹500 Cr) = risky. Too large AUM in mid/small cap = difficult to buy quality stocks. Sweet spot: ₹1,000–₹10,000 Cr for active funds.</div></div></div>
+        <div class="tip-item w"><div class="tip-icon">⚠</div><div class="tip-body"><div class="tip-title">Don't Chase Recent Top Performers</div><div class="tip-desc">Last year's #1 fund rarely repeats. This is called "Recency Bias" — one of the most expensive investing mistakes.</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 5: ADVANCED THEORY ── -->
+  <div id="advanced">
+    <div class="section-head">
+      <div class="sh-icon purple">🧠</div>
+      <div><div class="sh-title">Advanced Investment Theory</div><div class="sh-sub">Frameworks that separate informed investors from the crowd</div></div>
+    </div>
+
+    <div class="two-col">
+      <div class="panel purple-panel">
+        <div class="panel-title purple">🧠 Behavioural Finance Traps</div>
+        <div class="tip-list">
+          <div class="tip-item p"><div class="tip-icon">🪞</div><div class="tip-body"><div class="tip-title">Loss Aversion</div><div class="tip-desc">Humans feel losses 2x more painfully than equivalent gains. This causes panic selling at the bottom — the worst time to sell.</div></div></div>
+          <div class="tip-item p"><div class="tip-icon">📰</div><div class="tip-body"><div class="tip-title">Confirmation Bias</div><div class="tip-desc">We seek news that confirms what we already believe about a stock. Actively read opposing views before any investment.</div></div></div>
+          <div class="tip-item p"><div class="tip-icon">🐑</div><div class="tip-body"><div class="tip-title">Herd Mentality</div><div class="tip-desc">Buying because "everyone is buying" (crypto in 2021, small caps in 2024). When your auto-rickshaw driver gives stock tips — it's the top.</div></div></div>
+          <div class="tip-item p"><div class="tip-icon">⚓</div><div class="tip-body"><div class="tip-title">Anchoring Bias</div><div class="tip-desc">Holding a fallen stock hoping it "comes back to your buy price." The stock doesn't know what you paid. Judge on current fundamentals.</div></div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">📐 Key Investment Theories</div>
+        <div class="tip-list">
+          <div class="tip-item"><div class="tip-icon">📊</div><div class="tip-body"><div class="tip-title">Efficient Market Hypothesis (EMH)</div><div class="tip-desc">Stock prices reflect all available information at all times. If true, beating the market consistently is impossible — hence index funds outperform most active funds long-term.</div></div></div>
+          <div class="tip-item g"><div class="tip-icon">🥧</div><div class="tip-body"><div class="tip-title">Modern Portfolio Theory (MPT)</div><div class="tip-desc">Diversification reduces risk without sacrificing return. Correlation matters — combine assets that don't move together (equity + gold + bonds).</div></div></div>
+          <div class="tip-item"><div class="tip-icon">💰</div><div class="tip-body"><div class="tip-title">Time Value of Money</div><div class="tip-desc">₹1 lakh today is worth more than ₹1 lakh 5 years from now due to inflation and opportunity cost. Always calculate Present Value (PV) of future money.</div></div></div>
+          <div class="tip-item g"><div class="tip-icon">📉</div><div class="tip-body"><div class="tip-title">Dollar Cost Averaging (DCA)</div><div class="tip-desc">Invest fixed amount regularly regardless of market level. SIP is DCA. Removes timing risk entirely — you buy cheap when markets fall automatically.</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel purple-panel">
+      <div class="panel-title purple">📊 Key Ratios for Stock Analysis</div>
+      <div class="tbl-wrap">
+        <table class="model-table">
+          <thead><tr><th>Ratio</th><th>Formula</th><th>Good Range</th><th>What It Tells You</th></tr></thead>
+          <tbody>
+            <tr><td class="bold-td">P/E Ratio</td><td>Price / EPS</td><td>10–25 (sector dependent)</td><td>How much you pay per ₹1 of earnings. High = expensive or high growth expected.</td></tr>
+            <tr><td class="bold-td">P/B Ratio</td><td>Price / Book Value</td><td>Under 3</td><td>Compares price to actual assets. Under 1 may indicate undervaluation.</td></tr>
+            <tr><td class="bold-td">ROE</td><td>Net Income / Equity</td><td>Over 15%</td><td>How efficiently a company uses shareholder money to generate profit.</td></tr>
+            <tr><td class="bold-td">Debt to Equity</td><td>Total Debt / Equity</td><td>Under 1</td><td>Companies with D/E over 2 are highly leveraged — risky in downturns.</td></tr>
+            <tr><td class="bold-td">Free Cash Flow</td><td>Operating CF − CapEx</td><td>Positive</td><td>Real money left after operations. More reliable than reported profits.</td></tr>
+            <tr><td class="bold-td">Dividend Yield</td><td>Dividend / Price × 100</td><td>2–5%</td><td>Income from holding. Over 7% may signal a falling stock price (yield trap).</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 6: MISTAKES ── -->
+  <div id="mistakes">
+    <div class="section-head">
+      <div class="sh-icon red">⚠</div>
+      <div><div class="sh-title">Common Financial Mistakes</div><div class="sh-sub">What most Indians do wrong — and how to avoid them</div></div>
+    </div>
+    <div class="panel red-panel">
+      <div class="panel-title red">🚫 Avoid These</div>
+      <div class="tip-list">
+        <div class="tip-item r"><div class="tip-icon">🚫</div><div class="tip-body"><div class="tip-title">Mixing Insurance with Investment</div><div class="tip-desc">LIC endowment / money-back plans give 4–5% returns and call it "safe." Buy pure term insurance (₹1 Cr cover for ₹10,000/year) and invest the rest in mutual funds separately.</div></div></div>
+        <div class="tip-item r"><div class="tip-icon">🚫</div><div class="tip-body"><div class="tip-title">No Term Insurance</div><div class="tip-desc">If you have dependents and no term life insurance, your family is financially unprotected. ₹1 Cr term cover at age 30 costs only ~₹8,000–10,000 per year.</div></div></div>
+        <div class="tip-item r"><div class="tip-icon">🚫</div><div class="tip-body"><div class="tip-title">FD for Long-Term Wealth</div><div class="tip-desc">FD at 7% with 30% tax bracket = 4.9% effective return. Inflation at 6% = you're actually losing purchasing power. Use FD only for emergency fund or short-term parking.</div></div></div>
+        <div class="tip-item r"><div class="tip-icon">🚫</div><div class="tip-body"><div class="tip-title">Investing in Gold Jewellery</div><div class="tip-desc">Making charges (15–25%) + GST + selling discount = massive loss on exit. Use Sovereign Gold Bonds (SGB) instead — 2.5% interest + gold price appreciation + no GST.</div></div></div>
+        <div class="tip-item r"><div class="tip-icon">🚫</div><div class="tip-body"><div class="tip-title">Timing the Market</div><div class="tip-desc">"Time in the market beats timing the market." Missing the 10 best days of a 20-year market cycle can halve your returns. Stay invested always.</div></div></div>
+        <div class="tip-item r"><div class="tip-icon">🚫</div><div class="tip-body"><div class="tip-title">No Nomination / Will</div><div class="tip-desc">Without nomination in mutual funds, bank accounts and insurance, your family will face legal battles for your own money. Update nominations today — takes 10 minutes.</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── JINJA TIPS FROM FLASK (original feature preserved) ── -->
+  {% if tips %}
+  <div id="yourtips">
+    <div class="section-head">
+      <div class="sh-icon blue">📋</div>
+      <div><div class="sh-title">Financial Tips</div><div class="sh-sub">Curated tips from FinHealth</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">💡 Tips</div>
+      <div class="jinja-list">
+        {% for tip in tips %}
+        <div class="jinja-tip">
+          <div class="jt-num">{{ loop.index }}</div>
+          <div>{{ tip }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
 </body>
 </html>
