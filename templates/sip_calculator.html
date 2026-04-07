@@ -1,31 +1,562 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>SIP Calculator</title>
-<style>
-body{font-family:Arial;background:#f5f5f5;margin:0;padding:0;}
-header{background:#2196f3;color:white;text-align:center;padding:20px;}
-section{max-width:600px;margin:20px auto;background:white;padding:20px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
-label{display:block;margin-top:10px;}
-input{width:100%;padding:7px;margin-top:5px;border-radius:5px;border:1px solid #ccc;}
-button{margin-top:10px;padding:10px 15px;background:#2196f3;color:white;border:none;border-radius:5px;cursor:pointer;}
-.result{margin-top:15px;padding:10px;background:#e3f2fd;border-radius:5px;}
-</style>
+  <meta charset="UTF-8">
+  <title>SIP Calculator — WebHeal. FinHealth</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --brand:        #00b894;
+      --brand-dark:   #009e7e;
+      --brand-light:  #e6f9f4;
+      --brand-mid:    #b2ede1;
+      --brand-glow:   rgba(0,184,148,0.13);
+      --bg:           #f2faf7;
+      --surface:      #ffffff;
+      --surface2:     #f7fdfb;
+      --border:       #d0ede5;
+      --text:         #0f2d25;
+      --text-muted:   #3d7a68;
+      --text-dim:     #8fbfb3;
+      --radius:       16px;
+      --radius-sm:    10px;
+      --shadow:       0 2px 16px rgba(0,184,148,0.08);
+      --shadow-md:    0 6px 28px rgba(0,184,148,0.13);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Times New Roman', Times, serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+    }
+
+    /* TOPBAR */
+    .topbar {
+      background: var(--brand); height: 56px;
+      display: flex; align-items: center; padding: 0 28px;
+      box-shadow: 0 2px 12px rgba(0,184,148,0.3);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .topbar-brand { color: #fff; font-size: 1.2rem; font-weight: bold; font-style: italic; }
+    .topbar-tag { margin-left: auto; font-size: 0.75rem; color: rgba(255,255,255,0.75); letter-spacing: 0.1em; text-transform: uppercase; }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, var(--brand) 0%, #00c9a7 100%);
+      padding: 44px 24px 80px; text-align: center; position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-badge { display: inline-flex; align-items: center; gap: 7px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.35); color: #fff; border-radius: 20px; padding: 5px 14px; font-size: 0.75rem; font-weight: bold; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 14px; position: relative; }
+    .hero h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: bold; font-style: italic; color: #fff; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 10px; position: relative; }
+    .hero p { font-size: 0.95rem; color: rgba(255,255,255,0.85); max-width: 480px; margin: 0 auto; line-height: 1.6; position: relative; }
+
+    /* PAGE */
+    .page { max-width: 1060px; margin: 0 auto; padding: 0 24px 60px; }
+
+    /* MAIN GRID */
+    .main-grid { display: grid; grid-template-columns: 380px 1fr; gap: 24px; margin-top: -44px; align-items: start; }
+
+    /* PANEL */
+    .panel {
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: var(--radius); padding: 26px; box-shadow: var(--shadow-md);
+      position: relative; overflow: hidden;
+      animation: fadeUp 0.5s ease both;
+    }
+    .panel::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--brand), #00d4aa); }
+    .panel:nth-child(2) { animation-delay: 0.1s; }
+
+    .panel-title {
+      font-size: 0.78rem; font-weight: bold; text-transform: uppercase;
+      letter-spacing: 0.12em; color: var(--brand); margin-bottom: 20px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .panel-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* FIELDS */
+    .field { margin-bottom: 16px; }
+    .field label {
+      display: block; font-size: 0.85rem; font-weight: bold;
+      color: var(--text); margin-bottom: 6px;
+    }
+    .field-hint { font-size: 0.75rem; color: var(--text-dim); margin-top: 3px; }
+
+    input[type="number"], select {
+      width: 100%; padding: 11px 14px;
+      background: var(--surface2); border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 0.95rem; color: var(--text); outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s; appearance: none;
+    }
+    input:focus, select:focus {
+      border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-glow); background: #fff;
+    }
+    input::placeholder { color: var(--text-dim); }
+
+    /* RANGE SLIDER */
+    .range-wrap { position: relative; margin-top: 6px; }
+    input[type="range"] {
+      width: 100%; height: 6px; appearance: none; background: var(--border);
+      border-radius: 10px; outline: none; border: none; padding: 0; box-shadow: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none; width: 20px; height: 20px; border-radius: 50%;
+      background: var(--brand); cursor: pointer; border: 3px solid #fff;
+      box-shadow: 0 2px 8px rgba(0,184,148,0.4);
+    }
+    .range-labels { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-dim); margin-top: 4px; }
+
+    /* CALCULATE BTN */
+    .btn-calc {
+      width: 100%; padding: 14px; background: var(--brand); color: #fff;
+      border: none; border-radius: var(--radius-sm);
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 1rem; font-weight: bold; cursor: pointer;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 18px rgba(0,184,148,0.32); margin-top: 6px;
+    }
+    .btn-calc:hover { background: var(--brand-dark); transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,184,148,0.45); }
+    .btn-calc:active { transform: translateY(0); }
+
+    /* RESULT STATS */
+    .result-section { display: none; }
+    .result-section.show { display: block; animation: fadeUp 0.4s ease both; }
+
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+    .stat-tile {
+      background: var(--surface2); border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm); padding: 16px 14px; text-align: center;
+    }
+    .stat-tile.highlight { background: var(--brand-light); border-color: var(--brand-mid); }
+    .stat-tile .st-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: bold; margin-bottom: 6px; }
+    .stat-tile .st-value { font-size: 1.3rem; font-weight: bold; color: var(--text); font-style: italic; }
+    .stat-tile.highlight .st-value { color: var(--brand); }
+
+    /* CHART */
+    .chart-wrap { position: relative; height: 280px; margin-bottom: 20px; }
+
+    /* YEAR TABLE */
+    .year-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .year-table th { background: var(--brand); color: #fff; padding: 10px 12px; text-align: left; font-weight: bold; font-size: 0.8rem; }
+    .year-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--text-muted); }
+    .year-table tr:last-child td { border-bottom: none; font-weight: bold; color: var(--text); }
+    .year-table tr:nth-child(even) td { background: var(--surface2); }
+    .table-wrap { max-height: 280px; overflow-y: auto; border: 1.5px solid var(--border); border-radius: var(--radius-sm); }
+
+    /* PDF BTN */
+    .btn-pdf {
+      width: 100%; padding: 12px; margin-top: 16px;
+      background: var(--surface); color: var(--brand);
+      border: 1.5px solid var(--brand-mid); border-radius: var(--radius-sm);
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 0.95rem; font-weight: bold; cursor: pointer;
+      transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-pdf:hover { background: var(--brand); color: #fff; border-color: var(--brand); }
+
+    /* INSIGHT BOX */
+    .insight-box {
+      background: var(--brand-light); border: 1.5px solid var(--brand-mid);
+      border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 20px;
+      font-size: 0.9rem; color: var(--text-muted); line-height: 1.7;
+    }
+    .insight-box strong { color: var(--brand-dark); }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+    @media (max-width: 800px) {
+      .main-grid { grid-template-columns: 1fr; margin-top: -28px; }
+      .stat-grid  { grid-template-columns: 1fr 1fr; }
+      .page { padding: 0 16px 48px; }
+    }
+  </style>
 </head>
 <body>
-<header><h1>SIP Calculator</h1></header>
-<section>
-<form method="POST">
-<label>Monthly Investment (₹): <input type="number" name="monthly" required></label>
-<label>Years: <input type="number" name="years" required></label>
-<label>Expected Return Rate (% per annum): <input type="number" name="return_rate" required></label>
-<button type="submit">Calculate</button>
-</form>
 
-{% if result %}
-<div class="result">{{ result }}</div>
-{% endif %}
-</section>
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-brand">WebHeal.</div>
+  <div class="topbar-tag">FinHealth · SIP Calculator</div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">📈 Investment Planner</div>
+  <h1>SIP Calculator</h1>
+  <p>Plan your Systematic Investment Plan and see how your money grows over time with detailed projections.</p>
+</div>
+
+<div class="page">
+  <div class="main-grid">
+
+    <!-- LEFT: INPUT PANEL -->
+    <div class="panel">
+      <div class="panel-title">⚙ Investment Details</div>
+
+      <div class="field">
+        <label>Monthly Investment (₹)</label>
+        <input type="number" id="monthly" placeholder="e.g. 5000" min="100" oninput="syncRange('monthly','monthlyRange')">
+        <div class="range-wrap">
+          <input type="range" id="monthlyRange" min="500" max="100000" step="500" value="5000" oninput="syncInput('monthlyRange','monthly')">
+          <div class="range-labels"><span>₹500</span><span>₹1L</span></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Investment Period (Years)</label>
+        <input type="number" id="years" placeholder="e.g. 10" min="1" max="40" oninput="syncRange('years','yearsRange')">
+        <div class="range-wrap">
+          <input type="range" id="yearsRange" min="1" max="40" step="1" value="10" oninput="syncInput('yearsRange','years')">
+          <div class="range-labels"><span>1 yr</span><span>40 yrs</span></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Expected Annual Return (%)</label>
+        <input type="number" id="returnRate" placeholder="e.g. 12" min="1" max="30" step="0.5" oninput="syncRange('returnRate','returnRange')">
+        <div class="range-wrap">
+          <input type="range" id="returnRange" min="1" max="30" step="0.5" value="12" oninput="syncInput('returnRange','returnRate')">
+          <div class="range-labels"><span>1%</span><span>30%</span></div>
+        </div>
+        <div class="field-hint">Typical equity mutual fund: 10–15% | Debt fund: 6–8%</div>
+      </div>
+
+      <div class="field">
+        <label>Step-Up SIP (Annual Increase %)</label>
+        <input type="number" id="stepUp" placeholder="0 for no step-up" min="0" max="50" value="0">
+        <div class="field-hint">Increase your SIP every year — powerful for wealth creation</div>
+      </div>
+
+      <button class="btn-calc" onclick="calculate()">📊 Calculate Returns</button>
+    </div>
+
+    <!-- RIGHT: RESULT PANEL -->
+    <div class="panel">
+      <div class="panel-title">📊 Projection Results</div>
+
+      <!-- PLACEHOLDER -->
+      <div id="placeholder" style="text-align:center; padding:60px 0; color:var(--text-dim);">
+        <div style="font-size:3rem; margin-bottom:12px;">📈</div>
+        <div style="font-size:0.95rem; font-style:italic;">Enter your details and click Calculate to see your investment projection</div>
+      </div>
+
+      <!-- RESULTS -->
+      <div class="result-section" id="resultSection">
+
+        <!-- INSIGHT -->
+        <div class="insight-box" id="insightBox"></div>
+
+        <!-- STAT TILES -->
+        <div class="stat-grid">
+          <div class="stat-tile"><div class="st-label">Total Invested</div><div class="st-value" id="rInvested">—</div></div>
+          <div class="stat-tile highlight"><div class="st-label">Total Value</div><div class="st-value" id="rValue">—</div></div>
+          <div class="stat-tile"><div class="st-label">Wealth Gained</div><div class="st-value" id="rGain">—</div></div>
+          <div class="stat-tile"><div class="st-label">Return Multiple</div><div class="st-value" id="rMultiple">—</div></div>
+        </div>
+
+        <!-- CHART -->
+        <div class="chart-wrap">
+          <canvas id="sipChart"></canvas>
+        </div>
+
+        <!-- YEAR TABLE -->
+        <div class="panel-title" style="margin-bottom:10px;">📋 Year-by-Year Breakdown</div>
+        <div class="table-wrap">
+          <table class="year-table">
+            <thead>
+              <tr>
+                <th>Year</th>
+                <th>Monthly SIP (₹)</th>
+                <th>Invested (₹)</th>
+                <th>Value (₹)</th>
+                <th>Gain (₹)</th>
+              </tr>
+            </thead>
+            <tbody id="yearTableBody"></tbody>
+          </table>
+        </div>
+
+        <!-- PDF BUTTON -->
+        <button class="btn-pdf" onclick="downloadPDF()">⬇ Download PDF Report</button>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  let sipChart = null;
+
+  // ── RANGE SYNC ────────────────────────────────────────────────────
+  function syncRange(inputId, rangeId) {
+    const val = document.getElementById(inputId).value;
+    document.getElementById(rangeId).value = val;
+  }
+  function syncInput(rangeId, inputId) {
+    const val = document.getElementById(rangeId).value;
+    document.getElementById(inputId).value = val;
+  }
+
+  // Set default values on load
+  window.onload = () => {
+    document.getElementById('monthly').value    = 5000;
+    document.getElementById('years').value      = 10;
+    document.getElementById('returnRate').value = 12;
+    document.getElementById('stepUp').value     = 0;
+  };
+
+  // ── FORMAT ────────────────────────────────────────────────────────
+  function fmt(n) {
+    if (n >= 10000000) return '₹' + (n / 10000000).toFixed(2) + ' Cr';
+    if (n >= 100000)   return '₹' + (n / 100000).toFixed(2) + ' L';
+    return '₹' + Math.round(n).toLocaleString('en-IN');
+  }
+
+  // ── CALCULATE ─────────────────────────────────────────────────────
+  function calculate() {
+    const monthly    = parseFloat(document.getElementById('monthly').value);
+    const years      = parseInt(document.getElementById('years').value);
+    const annualRate = parseFloat(document.getElementById('returnRate').value);
+    const stepUp     = parseFloat(document.getElementById('stepUp').value) || 0;
+
+    if (!monthly || !years || !annualRate) {
+      alert('Please fill all required fields'); return;
+    }
+
+    const monthlyRate = annualRate / 100 / 12;
+    let totalValue    = 0;
+    let totalInvested = 0;
+    let currentSIP    = monthly;
+
+    const yearLabels  = [];
+    const investedArr = [];
+    const valueArr    = [];
+    const tableRows   = [];
+
+    for (let y = 1; y <= years; y++) {
+      // Apply step-up at start of each year (except first)
+      if (y > 1 && stepUp > 0) currentSIP = currentSIP * (1 + stepUp / 100);
+
+      const months = 12;
+      for (let m = 0; m < months; m++) {
+        totalValue    = (totalValue + currentSIP) * (1 + monthlyRate);
+        totalInvested += currentSIP;
+      }
+
+      yearLabels.push('Year ' + y);
+      investedArr.push(Math.round(totalInvested));
+      valueArr.push(Math.round(totalValue));
+      tableRows.push({
+        year: y,
+        sip: Math.round(currentSIP),
+        invested: Math.round(totalInvested),
+        value: Math.round(totalValue),
+        gain: Math.round(totalValue - totalInvested)
+      });
+    }
+
+    const totalGain   = totalValue - totalInvested;
+    const multiple    = (totalValue / totalInvested).toFixed(2);
+
+    // Stats
+    document.getElementById('rInvested').textContent = fmt(totalInvested);
+    document.getElementById('rValue').textContent    = fmt(totalValue);
+    document.getElementById('rGain').textContent     = fmt(totalGain);
+    document.getElementById('rMultiple').textContent = multiple + 'x';
+
+    // Insight
+    document.getElementById('insightBox').innerHTML =
+      `Your <strong>₹${monthly.toLocaleString('en-IN')}/month</strong> investment over 
+       <strong>${years} years</strong> at <strong>${annualRate}%</strong> returns will grow to 
+       <strong>${fmt(totalValue)}</strong> — turning every rupee invested into 
+       <strong>₹${multiple}</strong>. Your wealth gained is <strong>${fmt(totalGain)}</strong> 
+       ${stepUp > 0 ? `with a <strong>${stepUp}% annual step-up</strong> applied.` : 'at constant SIP.'}`;
+
+    // Year table
+    const tbody = document.getElementById('yearTableBody');
+    tbody.innerHTML = '';
+    tableRows.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${r.year}</td><td>₹${r.sip.toLocaleString('en-IN')}</td><td>${fmt(r.invested)}</td><td>${fmt(r.value)}</td><td>${fmt(r.gain)}</td>`;
+      tbody.appendChild(tr);
+    });
+
+    // Chart
+    if (sipChart) sipChart.destroy();
+    const ctx = document.getElementById('sipChart').getContext('2d');
+    sipChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: yearLabels,
+        datasets: [
+          {
+            label: 'Amount Invested',
+            data: investedArr,
+            backgroundColor: 'rgba(0,184,148,0.2)',
+            borderColor: '#00b894',
+            borderWidth: 2,
+            borderRadius: 4,
+          },
+          {
+            label: 'Total Value',
+            data: valueArr,
+            backgroundColor: 'rgba(0,201,167,0.45)',
+            borderColor: '#00c9a7',
+            borderWidth: 2,
+            borderRadius: 4,
+            type: 'line',
+            fill: false,
+            tension: 0.4,
+            pointBackgroundColor: '#00b894',
+            pointRadius: 3,
+          }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top', labels: { font: { family: 'Times New Roman', size: 12 } } },
+          tooltip: {
+            callbacks: {
+              label: ctx => ' ' + fmt(ctx.parsed.y)
+            }
+          }
+        },
+        scales: {
+          y: {
+            ticks: {
+              callback: v => fmt(v),
+              font: { family: 'Times New Roman', size: 11 }
+            },
+            grid: { color: 'rgba(0,184,148,0.08)' }
+          },
+          x: {
+            ticks: { font: { family: 'Times New Roman', size: 11 } },
+            grid: { display: false }
+          }
+        }
+      }
+    });
+
+    // Show results
+    document.getElementById('placeholder').style.display = 'none';
+    const rs = document.getElementById('resultSection');
+    rs.classList.add('show');
+  }
+
+  // ── PDF DOWNLOAD ──────────────────────────────────────────────────
+  function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    const monthly    = document.getElementById('monthly').value;
+    const years      = document.getElementById('years').value;
+    const returnRate = document.getElementById('returnRate').value;
+    const stepUp     = document.getElementById('stepUp').value;
+    const invested   = document.getElementById('rInvested').textContent;
+    const value      = document.getElementById('rValue').textContent;
+    const gain       = document.getElementById('rGain').textContent;
+    const multiple   = document.getElementById('rMultiple').textContent;
+    const today      = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'long', year:'numeric' });
+
+    const W = 210; const M = 18;
+
+    // Header bar
+    doc.setFillColor(0, 184, 148);
+    doc.rect(0, 0, W, 28, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18); doc.setFont('times', 'bolditalic');
+    doc.text('HealApp — SIP Calculator Report', M, 12);
+    doc.setFontSize(9); doc.setFont('times', 'normal');
+    doc.text('FinHealth Investment Planner · Generated: ' + today, M, 20);
+
+    // Title
+    doc.setTextColor(15, 45, 37);
+    doc.setFontSize(14); doc.setFont('times', 'bold');
+    doc.text('Systematic Investment Plan (SIP) Projection', M, 38);
+
+    // Input params box
+    doc.setFillColor(230, 249, 244);
+    doc.roundedRect(M, 44, W - 36, 32, 4, 4, 'F');
+    doc.setFontSize(9); doc.setFont('times', 'normal');
+    doc.setTextColor(61, 122, 104);
+    doc.text('INVESTMENT PARAMETERS', M + 5, 52);
+    doc.setTextColor(15, 45, 37);
+    doc.setFontSize(10);
+    doc.text(`Monthly SIP: ₹${parseFloat(monthly).toLocaleString('en-IN')}`, M + 5, 60);
+    doc.text(`Investment Period: ${years} Years`, M + 60, 60);
+    doc.text(`Expected Return: ${returnRate}% p.a.`, M + 120, 60);
+    doc.text(`Annual Step-Up: ${stepUp || 0}%`, M + 5, 68);
+
+    // Summary boxes
+    const boxes = [
+      { label: 'Total Invested', value: invested, x: M,      fill: [247,253,251] },
+      { label: 'Total Value',    value: value,    x: M + 46, fill: [230,249,244] },
+      { label: 'Wealth Gained',  value: gain,     x: M + 92, fill: [247,253,251] },
+      { label: 'Return Multiple',value: multiple, x: M + 138,fill: [230,249,244] },
+    ];
+    boxes.forEach(b => {
+      doc.setFillColor(...b.fill);
+      doc.roundedRect(b.x, 84, 42, 22, 3, 3, 'F');
+      doc.setFontSize(7); doc.setFont('times', 'bold');
+      doc.setTextColor(61, 122, 104);
+      doc.text(b.label.toUpperCase(), b.x + 2, 91);
+      doc.setFontSize(11); doc.setFont('times', 'bolditalic');
+      doc.setTextColor(0, 158, 126);
+      doc.text(b.value, b.x + 2, 100);
+    });
+
+    // Year table header
+    doc.setFontSize(10); doc.setFont('times', 'bold');
+    doc.setTextColor(15, 45, 37);
+    doc.text('Year-by-Year Breakdown', M, 117);
+
+    const cols = [M, M+18, M+58, M+100, M+138, M+168];
+    const headers = ['Year', 'Monthly SIP', 'Invested', 'Total Value', 'Gain'];
+
+    doc.setFillColor(0, 184, 148);
+    doc.rect(M, 120, W - 36, 8, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(8); doc.setFont('times', 'bold');
+    headers.forEach((h, i) => doc.text(h, cols[i], 125.5));
+
+    // Table rows
+    const rows = document.querySelectorAll('#yearTableBody tr');
+    let y = 131; let rowNum = 0;
+    rows.forEach(row => {
+      const cells = row.querySelectorAll('td');
+      if (cells.length < 5) return;
+      if (rowNum % 2 === 0) {
+        doc.setFillColor(247, 253, 251);
+        doc.rect(M, y - 5, W - 36, 7, 'F');
+      }
+      doc.setTextColor(61, 122, 104); doc.setFontSize(8); doc.setFont('times', 'normal');
+      [0,1,2,3,4].forEach(i => doc.text(cells[i].textContent, cols[i], y));
+      y += 7; rowNum++;
+      if (y > 270) { doc.addPage(); y = 20; }
+    });
+
+    // Footer
+    const pages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pages; i++) {
+      doc.setPage(i);
+      doc.setFillColor(0, 184, 148);
+      doc.rect(0, 285, W, 12, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(8); doc.setFont('times', 'normal');
+      doc.text('HealApp FinHealth · SIP Calculator Report', M, 292);
+      doc.text(`Page ${i} of ${pages}`, W - 30, 292);
+    }
+
+    doc.save(`SIP_Report_${monthly}pm_${years}yr.pdf`);
+  }
+</script>
 </body>
 </html>
