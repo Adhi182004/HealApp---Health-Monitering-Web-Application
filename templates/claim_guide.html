@@ -1,9 +1,476 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>Claim Guide</title>
+  <meta charset="UTF-8">
+  <title>Insurance Claim Guide — WebHeal.</title>
+  <style>
+    :root {
+      --brand:        #00b894;
+      --brand-dark:   #009e7e;
+      --brand-light:  #e6f9f4;
+      --brand-mid:    #b2ede1;
+      --bg:           #f2faf7;
+      --surface:      #ffffff;
+      --surface2:     #f7fdfb;
+      --border:       #d0ede5;
+      --text:         #0f2d25;
+      --text-muted:   #3d7a68;
+      --text-dim:     #8fbfb3;
+      --danger:       #e74c3c;
+      --danger-light: #fff0f0;
+      --danger-mid:   #ffd6d6;
+      --warn:         #f39c12;
+      --warn-light:   #fff8e6;
+      --radius:       16px;
+      --radius-sm:    10px;
+      --shadow:       0 2px 16px rgba(0,184,148,0.08);
+      --shadow-md:    0 6px 28px rgba(0,184,148,0.13);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Times New Roman', Times, serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* TOPBAR */
+    .topbar { background: var(--brand); height: 56px; display: flex; align-items: center; padding: 0 28px; box-shadow: 0 2px 12px rgba(0,184,148,0.3); position: sticky; top: 0; z-index: 200; }
+    .topbar-brand { color: #fff; font-size: 1.2rem; font-weight: bold; font-style: italic; }
+    .topbar-tag { margin-left: auto; font-size: 0.75rem; color: rgba(255,255,255,0.75); letter-spacing: 0.1em; text-transform: uppercase; }
+
+    /* HERO */
+    .hero { background: linear-gradient(135deg, var(--brand) 0%, #00c9a7 100%); padding: 52px 24px 90px; text-align: center; position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+    .hero-badge { display: inline-flex; align-items: center; gap: 7px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.35); color: #fff; border-radius: 20px; padding: 5px 14px; font-size: 0.75rem; font-weight: bold; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 14px; position: relative; }
+    .hero h1 { font-size: clamp(1.8rem,4vw,2.6rem); font-weight: bold; font-style: italic; color: #fff; line-height: 1.1; margin-bottom: 10px; position: relative; }
+    .hero p { font-size: 0.95rem; color: rgba(255,255,255,0.85); max-width: 560px; margin: 0 auto 24px; line-height: 1.7; position: relative; }
+    .hero-stats { display: flex; justify-content: center; gap: 32px; flex-wrap: wrap; position: relative; }
+    .hs { text-align: center; }
+    .hs-num { font-size: 1.6rem; font-weight: bold; color: #fff; }
+    .hs-label { font-size: 0.72rem; color: rgba(255,255,255,0.75); font-weight: bold; text-transform: uppercase; letter-spacing: 0.08em; }
+
+    /* PAGE */
+    .page { max-width: 1000px; margin: 0 auto; padding: 0 24px 60px; }
+
+    /* QUICK NAV */
+    .quick-nav { display: flex; flex-wrap: wrap; gap: 10px; margin: -32px 0 32px; position: relative; z-index: 10; animation: fadeUp 0.4s ease both; }
+    .nav-chip { background: var(--surface); border: 1.5px solid var(--border); border-radius: 20px; padding: 8px 16px; font-size: 0.82rem; font-weight: bold; color: var(--text-muted); cursor: pointer; transition: all 0.18s; box-shadow: var(--shadow); text-decoration: none; display: inline-block; }
+    .nav-chip:hover { background: var(--brand); color: #fff; border-color: var(--brand); }
+
+    /* SECTION HEADING */
+    .section-head { display: flex; align-items: center; gap: 12px; margin: 40px 0 20px; animation: fadeUp 0.4s ease both; }
+    .sh-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+    .sh-icon.green  { background: var(--brand-light); }
+    .sh-icon.red    { background: var(--danger-light); }
+    .sh-icon.yellow { background: var(--warn-light); }
+    .sh-icon.blue   { background: #eff6ff; }
+    .sh-title { font-size: 1.3rem; font-weight: bold; font-style: italic; color: var(--text); }
+    .sh-sub { font-size: 0.85rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* PANEL */
+    .panel { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow); margin-bottom: 20px; position: relative; overflow: hidden; animation: fadeUp 0.4s ease both; }
+    .panel::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--brand), #00d4aa); }
+    .panel.red-panel::after  { background: linear-gradient(90deg, var(--danger), #ff8a80); }
+    .panel.warn-panel::after { background: linear-gradient(90deg, var(--warn), #ffd54f); }
+    .panel.blue-panel::after { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+
+    .panel-title { font-size: 0.78rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.12em; color: var(--brand); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+    .panel-title.red    { color: var(--danger); }
+    .panel-title.yellow { color: var(--warn); }
+    .panel-title.blue   { color: #3b82f6; }
+    .panel-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* STEP CARDS */
+    .steps-list { display: flex; flex-direction: column; gap: 0; }
+    .step-item { display: flex; gap: 18px; padding: 20px 0; border-bottom: 1px solid var(--border); position: relative; }
+    .step-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .step-item:first-child { padding-top: 0; }
+
+    .step-left { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+    .step-num { width: 36px; height: 36px; border-radius: 50%; background: var(--brand); color: #fff; font-size: 1rem; font-weight: bold; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .step-line { flex: 1; width: 2px; background: var(--border); margin: 6px 0; min-height: 20px; }
+    .step-item:last-child .step-line { display: none; }
+
+    .step-body { flex: 1; min-width: 0; }
+    .step-title { font-size: 1rem; font-weight: bold; color: var(--text); margin-bottom: 6px; }
+    .step-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 8px; }
+    .step-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .step-tag { font-size: 0.72rem; font-weight: bold; padding: 3px 10px; border-radius: 20px; }
+    .tag-doc  { background: #eff6ff; color: #3b82f6; border: 1px solid #bfdbfe; }
+    .tag-time { background: var(--warn-light); color: var(--warn); border: 1px solid #ffe0a0; }
+    .tag-tip  { background: var(--brand-light); color: var(--brand-dark); border: 1px solid var(--brand-mid); }
+
+    /* ACCEPTED / REJECTED CARDS */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+
+    .accept-list, .reject-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .accept-item { display: flex; gap: 12px; padding: 14px 16px; background: var(--brand-light); border: 1.5px solid var(--brand-mid); border-radius: var(--radius-sm); animation: fadeUp 0.3s ease both; }
+    .accept-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+    .accept-body .a-title { font-size: 0.9rem; font-weight: bold; color: var(--brand-dark); margin-bottom: 4px; }
+    .accept-body .a-desc  { font-size: 0.8rem; color: var(--text-muted); line-height: 1.55; }
+
+    .reject-item { display: flex; gap: 12px; padding: 14px 16px; background: var(--danger-light); border: 1.5px solid var(--danger-mid); border-radius: var(--radius-sm); animation: fadeUp 0.3s ease both; }
+    .reject-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+    .reject-body .r-title { font-size: 0.9rem; font-weight: bold; color: var(--danger); margin-bottom: 4px; }
+    .reject-body .r-desc  { font-size: 0.8rem; color: var(--text-muted); line-height: 1.55; }
+
+    /* DOCUMENTS CHECKLIST */
+    .doc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .doc-item { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; background: var(--surface2); border: 1.5px solid var(--border); border-radius: var(--radius-sm); }
+    .doc-item .di-icon { font-size: 1.1rem; flex-shrink: 0; }
+    .doc-item .di-name { font-size: 0.88rem; font-weight: bold; color: var(--text); }
+    .doc-item .di-note { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+    .doc-item.must { border-color: var(--brand-mid); background: var(--brand-light); }
+    .doc-item.must .di-name { color: var(--brand-dark); }
+
+    /* TIPS GRID */
+    .tips-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .tip-card { background: var(--surface2); border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 16px; }
+    .tip-card .tc-icon { font-size: 1.5rem; margin-bottom: 8px; display: block; }
+    .tip-card .tc-title { font-size: 0.9rem; font-weight: bold; color: var(--text); margin-bottom: 5px; }
+    .tip-card .tc-desc  { font-size: 0.82rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* TIMELINE */
+    .timeline { display: flex; flex-direction: column; gap: 0; }
+    .tl-item { display: flex; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--border); }
+    .tl-item:last-child { border-bottom: none; }
+    .tl-badge { background: var(--brand); color: #fff; font-size: 0.72rem; font-weight: bold; padding: 4px 10px; border-radius: 20px; white-space: nowrap; height: fit-content; margin-top: 2px; flex-shrink: 0; }
+    .tl-body .tl-title { font-size: 0.92rem; font-weight: bold; color: var(--text); margin-bottom: 4px; }
+    .tl-body .tl-desc  { font-size: 0.82rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* ESCALATION BOX */
+    .escalation-box { background: #fff8e6; border: 1.5px solid #ffe0a0; border-radius: var(--radius-sm); padding: 18px 20px; margin-bottom: 16px; }
+    .esc-title { font-size: 0.82rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.1em; color: var(--warn); margin-bottom: 12px; }
+    .esc-steps { display: flex; flex-direction: column; gap: 8px; }
+    .esc-step  { display: flex; align-items: center; gap: 12px; font-size: 0.88rem; color: var(--text-muted); }
+    .esc-num   { width: 24px; height: 24px; border-radius: 50%; background: var(--warn); color: #fff; font-size: 0.72rem; font-weight: bold; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+
+    @media (max-width: 700px) {
+      .two-col, .doc-grid, .tips-grid { grid-template-columns: 1fr; }
+      .page { padding: 0 16px 48px; }
+      .quick-nav { margin-top: -20px; }
+    }
+  </style>
 </head>
 <body>
-    <h1>Claim Guide</h1>
-    <p>This is the claim guide content.</p>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-brand">WebHeal.</div>
+  <div class="topbar-tag">Insurance Claim Guide</div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">📋 Complete Claim Guide</div>
+  <h1>Health Insurance<br>Claim Guide</h1>
+  <p>Everything you need to know about filing a health insurance claim — step by step process, what gets accepted, why claims get rejected, and how to fight back.</p>
+  <div class="hero-stats">
+    <div class="hs"><div class="hs-num">2</div><div class="hs-label">Claim Types</div></div>
+    <div class="hs"><div class="hs-num">12</div><div class="hs-label">Rejection Reasons</div></div>
+    <div class="hs"><div class="hs-num">30</div><div class="hs-label">Days to Settle</div></div>
+    <div class="hs"><div class="hs-num">IRDAI</div><div class="hs-label">Your Protector</div></div>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- QUICK NAV -->
+  <div class="quick-nav">
+    <a class="nav-chip" href="#types">📂 Claim Types</a>
+    <a class="nav-chip" href="#steps">📋 Step-by-Step</a>
+    <a class="nav-chip" href="#documents">📁 Documents</a>
+    <a class="nav-chip" href="#accepted">✅ Accepted Claims</a>
+    <a class="nav-chip" href="#rejected">🚫 Rejection Reasons</a>
+    <a class="nav-chip" href="#timeline">⏱ Timeline</a>
+    <a class="nav-chip" href="#tips">💡 Pro Tips</a>
+    <a class="nav-chip" href="#escalate">⚡ Escalation</a>
+  </div>
+
+  <!-- CLAIM TYPES -->
+  <div id="types">
+    <div class="section-head">
+      <div class="sh-icon blue">📂</div>
+      <div><div class="sh-title">Two Types of Claims</div><div class="sh-sub">Know which one applies to your situation</div></div>
+    </div>
+    <div class="two-col">
+      <div class="panel blue-panel">
+        <div class="panel-title blue">💳 Cashless Claim</div>
+        <div class="accept-item" style="margin-bottom:10px;">
+          <div class="accept-icon">✅</div>
+          <div class="accept-body">
+            <div class="a-title">No upfront payment needed</div>
+            <div class="a-desc">Available only at network hospitals. The insurer directly pays the hospital — you pay nothing except non-covered amounts and copay.</div>
+          </div>
+        </div>
+        <div style="font-size:0.85rem; color:var(--text-muted); line-height:1.7;">
+          <strong>Best for:</strong> Planned surgeries, elective procedures<br>
+          <strong>Requires:</strong> Pre-authorization from insurer<br>
+          <strong>Tip:</strong> Always verify hospital is in network before admission
+        </div>
+      </div>
+      <div class="panel blue-panel">
+        <div class="panel-title blue">💰 Reimbursement Claim</div>
+        <div class="reject-item" style="margin-bottom:10px; background:#fff8e6; border-color:#ffe0a0;">
+          <div class="reject-icon">💸</div>
+          <div class="reject-body">
+            <div class="r-title" style="color:var(--warn);">You pay first, then claim back</div>
+            <div class="r-desc">Used when treated at non-network hospitals or in emergencies. You pay full bill, then submit claim with all original documents to get reimbursed.</div>
+          </div>
+        </div>
+        <div style="font-size:0.85rem; color:var(--text-muted); line-height:1.7;">
+          <strong>Best for:</strong> Emergency admissions, non-network hospitals<br>
+          <strong>Requires:</strong> All original bills and documents<br>
+          <strong>Tip:</strong> Keep every receipt — no original = no reimbursement
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP BY STEP -->
+  <div id="steps">
+    <div class="section-head">
+      <div class="sh-icon green">📋</div>
+      <div><div class="sh-title">Step-by-Step Claim Process</div><div class="sh-sub">Follow these steps exactly to avoid rejection</div></div>
+    </div>
+    <div class="panel">
+      <div class="steps-list">
+
+        <div class="step-item">
+          <div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div>
+          <div class="step-body">
+            <div class="step-title">Inform Your Insurer Immediately</div>
+            <div class="step-desc">Call your insurer's 24×7 helpline or TPA (Third Party Administrator) as soon as hospitalization is planned or occurs. For planned procedures, inform 3–5 days before. For emergencies, inform within 24 hours of admission.</div>
+            <div class="step-tags">
+              <span class="step-tag tag-time">⏱ Within 24 hrs (emergency)</span>
+              <span class="step-tag tag-time">⏱ 3–5 days before (planned)</span>
+              <span class="step-tag tag-tip">💡 Save insurer helpline in phone</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div>
+          <div class="step-body">
+            <div class="step-title">Show Your Health Card at Hospital</div>
+            <div class="step-desc">Present your health insurance card (physical or digital) to the hospital's insurance desk. They will verify your policy details and contact the insurer or TPA for authorization.</div>
+            <div class="step-tags">
+              <span class="step-tag tag-doc">📄 Health Insurance Card</span>
+              <span class="step-tag tag-doc">📄 Photo ID Proof</span>
+              <span class="step-tag tag-tip">💡 Keep digital copy on phone</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div>
+          <div class="step-body">
+            <div class="step-title">Pre-Authorization (Cashless Only)</div>
+            <div class="step-desc">For cashless claims, the hospital submits a pre-authorization form to the insurer. The insurer approves the estimated amount. This approval is required before treatment begins for non-emergency cases.</div>
+            <div class="step-tags">
+              <span class="step-tag tag-time">⏱ Insurer responds in 1–4 hours</span>
+              <span class="step-tag tag-doc">📄 Pre-auth form from hospital</span>
+              <span class="step-tag tag-tip">💡 Emergency cashless — approval can come after treatment</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-left"><div class="step-num">4</div><div class="step-line"></div></div>
+          <div class="step-body">
+            <div class="step-title">Collect All Documents During Hospitalization</div>
+            <div class="step-desc">While admitted, collect and preserve every document — doctor's notes, investigation reports, prescriptions, discharge summary. Do not leave hospital without the discharge summary and all original bills.</div>
+            <div class="step-tags">
+              <span class="step-tag tag-doc">📄 All original bills & receipts</span>
+              <span class="step-tag tag-doc">📄 Doctor's notes & prescriptions</span>
+              <span class="step-tag tag-doc">📄 Lab & test reports</span>
+              <span class="step-tag tag-tip">💡 Ask for itemized bill — not just final amount</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-left"><div class="step-num">5</div><div class="step-line"></div></div>
+          <div class="step-body">
+            <div class="step-title">Get Discharge Summary</div>
+            <div class="step-desc">The discharge summary is the most critical document for any claim. It must include diagnosis, treatment given, medicines prescribed, and doctor's signature. Without this, no claim will be processed.</div>
+            <div class="step-tags">
+              <span class="step-tag tag-doc">📄 Discharge Summary (signed)</span>
+              <span class="step-tag tag-time">⏱ Get before leaving hospital</span>
+              <span class="step-tag tag-tip">💡 Check diagnosis matches what was treated</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-left"><div class="step-num">6</div><div class="step-line"></div></div>
+          <div class="step-body">
+            <div class="step-title">Submit Claim Form + Documents</div>
+            <div class="step-desc">Fill the claim form accurately (download from insurer's website or get from hospital). Attach all original documents. Submit within the deadline — usually 15–30 days from discharge. Late submission = rejection.</div>
+            <div class="step-tags">
+              <span class="step-tag tag-time">⏱ Submit within 15–30 days</span>
+              <span class="step-tag tag-doc">📄 Duly filled claim form</span>
+              <span class="step-tag tag-tip">💡 Submit via registered post or insurer portal — keep proof</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-left"><div class="step-num">7</div><div class="step-line"></div></div>
+          <div class="step-body">
+            <div class="step-title">Track Your Claim</div>
+            <div class="step-desc">Use the insurer's mobile app, website or TPA portal to track claim status. Note your claim reference number. Follow up if no response in 7 days. IRDAI mandates settlement within 30 days of receiving all documents.</div>
+            <div class="step-tags">
+              <span class="step-tag tag-time">⏱ Settlement in 30 days (IRDAI mandate)</span>
+              <span class="step-tag tag-tip">💡 Follow up every 7 days if no response</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-left"><div class="step-num">8</div><div class="step-line"></div></div>
+          <div class="step-body">
+            <div class="step-title">Receive Settlement or Reply to Query</div>
+            <div class="step-desc">Insurer will either settle the claim, partially approve it, or raise a query asking for additional documents. Respond to queries immediately with the requested documents. If rejected, you have the right to appeal.</div>
+            <div class="step-tags">
+              <span class="step-tag tag-tip">💡 Keep copy of all submitted documents</span>
+              <span class="step-tag tag-time">⏱ Reply to queries within 7 days</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCUMENTS -->
+  <div id="documents">
+    <div class="section-head">
+      <div class="sh-icon blue">📁</div>
+      <div><div class="sh-title">Documents Checklist</div><div class="sh-sub">🟢 Must have · ⚪ If applicable</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">📁 Complete Document List</div>
+      <div class="doc-grid">
+        <div class="doc-item must"><div class="di-icon">📋</div><div><div class="di-name">Claim Form (Signed)</div><div class="di-note">Must · Download from insurer website</div></div></div>
+        <div class="doc-item must"><div class="di-icon">🏥</div><div><div class="di-name">Discharge Summary</div><div class="di-note">Must · Signed by treating doctor</div></div></div>
+        <div class="doc-item must"><div class="di-icon">🧾</div><div><div class="di-name">Original Hospital Bills</div><div class="di-note">Must · Itemized bill preferred</div></div></div>
+        <div class="doc-item must"><div class="di-icon">💊</div><div><div class="di-name">Pharmacy Bills + Prescriptions</div><div class="di-note">Must · All original receipts</div></div></div>
+        <div class="doc-item must"><div class="di-icon">🔬</div><div><div class="di-name">Lab / Investigation Reports</div><div class="di-note">Must · Blood tests, X-ray, MRI etc.</div></div></div>
+        <div class="doc-item must"><div class="di-icon">🪪</div><div><div class="di-name">Photo ID Proof</div><div class="di-note">Must · Aadhaar / PAN / Passport</div></div></div>
+        <div class="doc-item"><div class="di-icon">🏦</div><div><div class="di-name">Bank Account Details / NEFT Form</div><div class="di-note">If applicable · For reimbursement</div></div></div>
+        <div class="doc-item"><div class="di-icon">🩺</div><div><div class="di-name">Doctor's Certificate / Letter</div><div class="di-note">If applicable · For specific procedures</div></div></div>
+        <div class="doc-item"><div class="di-icon">🚑</div><div><div class="di-name">Ambulance Receipt</div><div class="di-note">If applicable · For ambulance claims</div></div></div>
+        <div class="doc-item"><div class="di-icon">📸</div><div><div class="di-name">FIR / Medico-Legal Report</div><div class="di-note">If applicable · For accident claims</div></div></div>
+        <div class="doc-item"><div class="di-icon">🩻</div><div><div class="di-name">Pre & Post-Op Reports</div><div class="di-note">If applicable · For surgical claims</div></div></div>
+        <div class="doc-item"><div class="di-icon">💉</div><div><div class="di-name">Previous Medical Records</div><div class="di-note">If applicable · For PED-related claims</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCEPTED & REJECTED -->
+  <div id="accepted">
+    <div class="section-head">
+      <div class="sh-icon green">✅</div>
+      <div><div class="sh-title">What Gets Accepted vs Rejected</div><div class="sh-sub">Know before you file</div></div>
+    </div>
+  </div>
+
+  <div class="two-col">
+
+    <!-- ACCEPTED -->
+    <div class="panel" id="accepted-panel">
+      <div class="panel-title">✅ Commonly Accepted Claims</div>
+      <div class="accept-list">
+        <div class="accept-item"><div class="accept-icon">🏥</div><div class="accept-body"><div class="a-title">Hospitalization (24+ hours)</div><div class="a-desc">Any illness or injury requiring 24+ hour admission is typically covered — surgeries, infections, accidents, organ failure etc.</div></div></div>
+        <div class="accept-item"><div class="accept-icon">🔪</div><div class="accept-body"><div class="a-title">Surgeries & Procedures</div><div class="a-desc">Appendectomy, bypass, knee replacement etc. are covered if medically necessary and not listed as exclusions.</div></div></div>
+        <div class="accept-item"><div class="accept-icon">🚑</div><div class="accept-body"><div class="a-title">Emergency Hospitalizations</div><div class="a-desc">Accidents, heart attacks, strokes — emergency admissions are covered even without prior intimation (notify within 24 hrs).</div></div></div>
+        <div class="accept-item"><div class="accept-icon">🔬</div><div class="accept-body"><div class="a-title">Day Care Procedures</div><div class="a-desc">Modern plans cover 200+ day care procedures like dialysis, cataract, chemotherapy that don't need 24hr admission.</div></div></div>
+        <div class="accept-item"><div class="accept-icon">🏠</div><div class="accept-body"><div class="a-title">Pre & Post Hospitalization</div><div class="a-desc">Medical expenses 30–60 days before admission and 60–90 days after discharge are covered in most policies.</div></div></div>
+        <div class="accept-item"><div class="accept-icon">🚐</div><div class="accept-body"><div class="a-title">Ambulance Charges</div><div class="a-desc">Road ambulance charges are covered up to a limit (usually ₹1,000–₹5,000) in most health insurance policies.</div></div></div>
+      </div>
+    </div>
+
+    <!-- REJECTED -->
+    <div class="panel red-panel" id="rejected">
+      <div class="panel-title red">🚫 Top 12 Reasons for Rejection</div>
+      <div class="reject-list">
+        <div class="reject-item"><div class="reject-icon">🤫</div><div class="reject-body"><div class="r-title">Non-Disclosure of Pre-existing Disease</div><div class="r-desc">Hiding diabetes, BP, heart disease at time of buying policy. Insurer will reject any claim related to undisclosed conditions.</div></div></div>
+        <div class="reject-item"><div class="reject-icon">⏰</div><div class="reject-body"><div class="r-title">Waiting Period Not Over</div><div class="r-desc">Claiming for a disease within the waiting period (30 days initial / 2–4 yrs PED). Policy is clear — no coverage during this time.</div></div></div>
+        <div class="reject-item"><div class="reject-icon">📅</div><div class="reject-body"><div class="r-title">Late Submission of Claim</div><div class="r-desc">Missing the submission deadline (usually 15–30 days from discharge). Insurers strictly reject late submissions.</div></div></div>
+        <div class="reject-item"><div class="reject-icon">📄</div><div class="reject-body"><div class="r-title">Incomplete / Missing Documents</div><div class="r-desc">Missing original bills, no discharge summary, photocopies instead of originals. Every missing document is a rejection risk.</div></div></div>
+        <div class="reject-item"><div class="reject-icon">🚫</div><div class="reject-body"><div class="r-title">Excluded Treatment / Condition</div><div class="r-desc">Cosmetic surgery, dental treatment, infertility treatment, self-inflicted injuries — these are standard exclusions in all policies.</div></div></div>
+        <div class="reject-item"><div class="reject-icon">🏨</div><div class="reject-body"><div class="r-title">Less than 24 Hours Hospitalization</div><div class="r-desc">Old policies required 24hr admission. Unless your procedure is in the day care list, under-24hr stays are rejected.</div></div></div>
+        <div class="reject-item"><div class="reject-icon">💊</div><div class="reject-body"><div class="r-title">OPD Treatment Without Coverage</div><div class="r-desc">Doctor consultations, outpatient treatment and medicines without OPD rider are not covered in standard plans.</div></div></div>
+        <div class="reject-item"><div class="reject-icon">🍺</div><div class="reject-body"><div class="r-title">Alcohol / Drug Related Illness</div><div class="r-desc">Hospitalizations caused by alcohol or substance abuse are explicitly excluded in almost all health insurance policies.</div></div></div>
+        <div class="reject-item"><div class="reject-icon">📝</div><div class="reject-body"><div class="r-title">Wrong / Incorrect Claim Form</div><div class="r-desc">Errors in policy number, diagnosis code, dates, or unsigned forms lead to automatic rejection without investigation.</div></div></div>
+        <div class="reject-item"><div class="reject-icon">🏥</div><div class="reject-body"><div class="r-title">Non-Registered / Unrecognized Hospital</div><div class="r-desc">Treatment at hospitals not recognized by the government or not in the insurer's approved list may be rejected.</div></div></div>
+        <div class="reject-item"><div class="reject-icon">😷</div><div class="reject-body"><div class="r-title">Policy Lapsed / Premium Unpaid</div><div class="r-desc">If your policy lapsed due to missed premium and you claim during the lapse period, the entire claim will be rejected.</div></div></div>
+        <div class="reject-item"><div class="reject-icon">🔍</div><div class="reject-body"><div class="r-title">Suspected Fraud / Inflated Bills</div><div class="r-desc">Fraudulent claims, duplicate bills, or inflated bills are investigated and rejected. Can also lead to policy termination.</div></div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TIMELINE -->
+  <div id="timeline">
+    <div class="section-head">
+      <div class="sh-icon yellow">⏱</div>
+      <div><div class="sh-title">Claim Settlement Timeline</div><div class="sh-sub">What happens when — IRDAI mandated deadlines</div></div>
+    </div>
+    <div class="panel warn-panel">
+      <div class="panel-title yellow">⏱ IRDAI Mandated Timelines</div>
+      <div class="timeline">
+        <div class="tl-item"><div class="tl-badge">Day 0</div><div class="tl-body"><div class="tl-title">Hospitalization / Discharge</div><div class="tl-desc">Your treatment is complete. Start collecting all documents immediately before leaving the hospital.</div></div></div>
+        <div class="tl-item"><div class="tl-badge">Day 1–7</div><div class="tl-body"><div class="tl-title">Inform Insurer & Prepare Documents</div><div class="tl-desc">Notify insurer (if not already done). Organize all bills, reports, discharge summary and fill claim form.</div></div></div>
+        <div class="tl-item"><div class="tl-badge">Day 15–30</div><div class="tl-body"><div class="tl-title">Submit Claim (Deadline)</div><div class="tl-desc">Most insurers require submission within 15–30 days of discharge. Check your policy document for exact deadline.</div></div></div>
+        <div class="tl-item"><div class="tl-badge">Day 30</div><div class="tl-body"><div class="tl-title">IRDAI Settlement Deadline</div><div class="tl-desc">Insurer must settle the claim within 30 days of receiving all complete documents. If not, they must pay 2% interest per month on the pending amount.</div></div></div>
+        <div class="tl-item"><div class="tl-badge">Day 45</div><div class="tl-body"><div class="tl-title">If No Settlement — Escalate to IRDAI</div><div class="tl-desc">If claim is not settled or rejected without valid reason after 45 days, you can file a complaint with IRDAI's Bima Bharosa portal or approach the Insurance Ombudsman.</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRO TIPS -->
+  <div id="tips">
+    <div class="section-head">
+      <div class="sh-icon green">💡</div>
+      <div><div class="sh-title">Pro Tips to Get Your Claim Approved</div><div class="sh-sub">What experienced policyholders do differently</div></div>
+    </div>
+    <div class="tips-grid">
+      <div class="tip-card"><span class="tc-icon">📸</span><div class="tc-title">Photograph Everything</div><div class="tc-desc">Before submitting, photograph every document. Keep digital copies on Google Drive or phone. If originals are lost in transit, copies help you reconstruct the claim.</div></div>
+      <div class="tip-card"><span class="tc-icon">🔢</span><div class="tc-title">Get Itemized Bills Always</div><div class="tc-desc">Never accept a single total bill. Ask for itemized bills showing each medicine, procedure, room charge separately. Insurers scrutinize vague bills and often reject them.</div></div>
+      <div class="tip-card"><span class="tc-icon">📞</span><div class="tc-title">Call TPA Before Discharge</div><div class="tc-desc">Don't leave hospital without calling your TPA to confirm all documents are in order. Many claims fail simply because one document was missed at discharge time.</div></div>
+      <div class="tip-card"><span class="tc-icon">✍️</span><div class="tc-title">Fill Forms in Capital Letters</div><div class="tc-desc">Always fill claim forms in block capital letters with a black pen. Messy handwriting, corrections with whitener, or missing signatures are common rejection reasons.</div></div>
+      <div class="tip-card"><span class="tc-icon">📮</span><div class="tc-title">Submit via Registered Post</div><div class="tc-desc">If submitting physical documents, always use Speed Post / Registered Post. Keep the tracking receipt as proof of submission date — critical if there's a deadline dispute.</div></div>
+      <div class="tip-card"><span class="tc-icon">🏥</span><div class="tc-title">Always Check Network Before Admission</div><div class="tc-desc">For planned procedures, confirm the hospital is in your insurer's network list. Cashless is denied if hospital is not in the empaneled list.</div></div>
+      <div class="tip-card"><span class="tc-icon">💬</span><div class="tc-title">Don't Exaggerate Symptoms</div><div class="tc-desc">Never ask doctors to write inflated diagnoses to get a larger claim. Insurers cross-check with medical records and this can lead to fraud investigation and policy termination.</div></div>
+      <div class="tip-card"><span class="tc-icon">📖</span><div class="tc-title">Read Your Policy Once a Year</div><div class="tc-desc">Most people never read their policy document. Read it once — know your sum insured, exclusions, waiting periods, sub-limits and co-pay. Surprises at claim time are avoidable.</div></div>
+    </div>
+  </div>
+
+  <!-- ESCALATION -->
+  <div id="escalate" style="margin-top:40px;">
+    <div class="section-head">
+      <div class="sh-icon red">⚡</div>
+      <div><div class="sh-title">If Your Claim is Rejected — Escalation Path</div><div class="sh-sub">You have rights — here's how to use them</div></div>
+    </div>
+    <div class="panel red-panel">
+      <div class="panel-title red">⚡ Step-by-Step Escalation</div>
+      <div class="escalation-box">
+        <div class="esc-title">⚠️ Know Your Rights First</div>
+        <div style="font-size:0.88rem; color:var(--text-muted); line-height:1.7;">Every policyholder has the right to appeal a rejected claim. IRDAI protects you. Insurers MUST provide written reasons for rejection. You have up to 3 years to file a complaint. Interest is payable on delayed settlements.</div>
+      </div>
+      <div class="esc-steps">
+        <div class="esc-step"><div class="esc-num">1</div><div><strong>Internal Grievance:</strong> Write to insurer's Grievance Redressal Officer (GRO). They must respond within 15 days. Ask for written rejection reason.</div></div>
+        <div class="esc-step"><div class="esc-num">2</div><div><strong>IRDAI Bima Bharosa:</strong> File online complaint at <strong>bimabharosa.irdai.gov.in</strong> or call <strong>155255</strong>. IRDAI will mediate with the insurer on your behalf.</div></div>
+        <div class="esc-step"><div class="esc-num">3</div><div><strong>Insurance Ombudsman:</strong> For claims up to ₹30 lakhs, approach the nearest Insurance Ombudsman office. Free of cost. Decision is binding on insurer.</div></div>
+        <div class="esc-step"><div class="esc-num">4</div><div><strong>Consumer Forum:</strong> File a case at District Consumer Disputes Redressal Forum. Can claim compensation for mental harassment in addition to claim amount.</div></div>
+        <div class="esc-step"><div class="esc-num">5</div><div><strong>Civil Court:</strong> Last resort for large claim amounts. Engage a lawyer specializing in insurance disputes. Success rate is high if documentation is complete.</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
 </body>
 </html>
