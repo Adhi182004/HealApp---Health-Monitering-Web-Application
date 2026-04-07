@@ -1,41 +1,650 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Insurance A–Z Terms</title>
-<style>
-  body{font-family:Arial;background:#f5f5f5;margin:0;padding:0;}
-  header{background:#4caf50;color:white;text-align:center;padding:20px;}
-  h1{text-align:center;}
-  section{max-width:700px;margin:20px auto;background:white;padding:20px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
-  .term{padding:10px;margin:10px 0;border-radius:5px;background:#e8f5e9;cursor:pointer;}
-  .desc{display:none;padding:10px;background:#c8e6c9;margin-top:5px;border-radius:5px;}
-</style>
+  <meta charset="UTF-8">
+  <title>Health Insurance Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --brand:       #00b894;
+      --brand-dark:  #009e7e;
+      --brand-light: #e6f9f4;
+      --brand-mid:   #b2ede1;
+      --bg:          #f2faf7;
+      --surface:     #ffffff;
+      --surface2:    #f7fdfb;
+      --border:      #d0ede5;
+      --text:        #0f2d25;
+      --text-muted:  #3d7a68;
+      --text-dim:    #8fbfb3;
+      --radius:      16px;
+      --radius-sm:   10px;
+      --shadow:      0 2px 16px rgba(0,184,148,0.08);
+      --shadow-md:   0 6px 28px rgba(0,184,148,0.13);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+    }
+
+
+    .topbar {
+      background: var(--brand); height: 56px;
+      display: flex; align-items: center; padding: 0 28px;
+      box-shadow: 0 2px 12px rgba(0,184,148,0.3);
+      position: sticky; top: 0; z-index: 200;
+    }
+    .topbar-brand { color: #fff; font-size: 1.1rem; font-weight: 800; letter-spacing: -0.02em; }
+    .topbar-tag { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: rgba(255,255,255,0.75); letter-spacing: 0.1em; text-transform: uppercase; }
+
+
+    .hero {
+      background: linear-gradient(135deg, var(--brand) 0%, #00c9a7 100%);
+      padding: 52px 24px 100px; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.35);
+      color: #fff; border-radius: 20px; padding: 5px 14px;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; margin-bottom: 16px;
+    }
+    .hero h1 {
+      font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800;
+      color: #fff; letter-spacing: -0.04em; line-height: 1.1; margin-bottom: 12px;
+    }
+    .hero p { font-size: 0.95rem; color: rgba(255,255,255,0.85); font-weight: 500; max-width: 520px; margin: 0 auto 28px; line-height: 1.6; }
+
+
+    .hero-stats {
+      display: flex; justify-content: center; gap: 32px; flex-wrap: wrap;
+    }
+    .hero-stat { text-align: center; }
+    .hero-stat .s-num { font-size: 1.6rem; font-weight: 800; color: #fff; font-family: 'JetBrains Mono', monospace; }
+    .hero-stat .s-label { font-size: 0.72rem; color: rgba(255,255,255,0.75); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+
+
+    .search-float {
+      max-width: 680px; margin: -36px auto 0;
+      padding: 0 24px; position: relative; z-index: 10;
+      animation: fadeUp 0.5s ease both;
+    }
+    .search-inner {
+      display: flex; gap: 10px;
+      background: #fff; border-radius: 14px;
+      padding: 8px 8px 8px 18px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,184,148,0.15);
+      transition: box-shadow 0.3s;
+    }
+    .search-inner:focus-within { box-shadow: 0 8px 40px rgba(0,0,0,0.15), 0 0 0 3px rgba(0,184,148,0.25); }
+    #searchInput {
+      flex: 1; border: none; outline: none; background: none;
+      font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.95rem;
+      font-weight: 500; color: var(--text); min-width: 0;
+    }
+    #searchInput::placeholder { color: var(--text-dim); }
+    .search-icon { color: var(--text-dim); font-size: 1.1rem; display: flex; align-items: center; }
+
+
+    .page { max-width: 1100px; margin: 0 auto; padding: 32px 24px 60px; }
+
+
+    .alpha-nav {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      margin-bottom: 28px; animation: fadeUp 0.5s 0.1s ease both;
+    }
+    .alpha-btn {
+      width: 34px; height: 34px;
+      border-radius: 8px; border: 1.5px solid var(--border);
+      background: var(--surface); color: var(--text-muted);
+      font-size: 0.82rem; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.18s; font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .alpha-btn:hover, .alpha-btn.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+    .alpha-btn.disabled { opacity: 0.3; cursor: default; pointer-events: none; }
+
+
+    .filter-row {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px;
+      animation: fadeUp 0.5s 0.15s ease both;
+    }
+    .filter-chip {
+      padding: 7px 15px; border-radius: 20px;
+      border: 1.5px solid var(--border); background: var(--surface);
+      color: var(--text-muted); font-size: 0.78rem; font-weight: 700;
+      cursor: pointer; transition: all 0.18s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .filter-chip:hover, .filter-chip.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+
+
+    .results-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .results-count { font-size: 0.78rem; font-family: 'JetBrains Mono', monospace; color: var(--text-muted); font-weight: 600; }
+
+
+    .terms-grid { display: flex; flex-direction: column; gap: 10px; }
+
+
+    .term-card {
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+      box-shadow: var(--shadow); transition: border-color 0.2s, box-shadow 0.2s;
+      animation: fadeUp 0.4s ease both;
+    }
+    .term-card:hover { border-color: rgba(0,184,148,0.4); box-shadow: var(--shadow-md); }
+
+    .term-header {
+      display: flex; align-items: center; gap: 14px;
+      padding: 18px 20px; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .term-header:hover { background: var(--surface2); }
+
+    .term-letter {
+      width: 40px; height: 40px; flex-shrink: 0;
+      background: var(--brand-light); border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; font-weight: 800; color: var(--brand);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .term-meta { flex: 1; min-width: 0; }
+    .term-name { font-size: 1rem; font-weight: 700; color: var(--text); }
+    .term-tagline { font-size: 0.78rem; color: var(--text-muted); font-weight: 500; margin-top: 2px; }
+
+    .term-badges { display: flex; gap: 6px; align-items: center; flex-shrink: 0; flex-wrap: wrap; }
+    .badge {
+      font-size: 0.65rem; font-weight: 700; padding: 3px 9px;
+      border-radius: 20px; letter-spacing: 0.05em; text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .badge-cat-costs     { background: #e8f0ff; color: #4a6cf7; }
+    .badge-cat-coverage  { background: #fff8e6; color: #d4920a; }
+    .badge-cat-claims    { background: #f0e8ff; color: #8b5cf6; }
+    .badge-cat-policy    { background: #fff0f0; color: #e74c3c; }
+    .badge-cat-network   { background: #e6f9f4; color: #00b894; }
+    .badge-lvl-basic     { background: #e6f9f4; color: #009e7e; border: 1px solid #b2ede1; }
+    .badge-lvl-medium    { background: #fff8e6; color: #b07d10; border: 1px solid #ffe0a0; }
+    .badge-lvl-advanced  { background: #fff0f0; color: #c0392b; border: 1px solid #ffd6d6; }
+
+    .term-chevron {
+      color: var(--text-dim); font-size: 1rem; transition: transform 0.3s;
+      flex-shrink: 0;
+    }
+    .term-card.open .term-chevron { transform: rotate(180deg); }
+
+
+    .term-body {
+      display: none; border-top: 1.5px solid var(--border);
+      padding: 20px 20px 20px 74px;
+      background: var(--surface2);
+    }
+    .term-card.open .term-body { display: block; animation: fadeDown 0.25s ease both; }
+
+    .term-desc { font-size: 0.9rem; line-height: 1.8; color: var(--text-muted); font-weight: 500; margin-bottom: 14px; }
+
+    .term-sections { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .term-section {
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm); padding: 14px 16px;
+    }
+    .term-section .ts-label {
+      font-size: 0.65rem; font-weight: 700; font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase; letter-spacing: 0.1em; color: var(--brand);
+      margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+    }
+    .term-section .ts-text { font-size: 0.85rem; color: var(--text); font-weight: 500; line-height: 1.6; }
+
+    .term-tip {
+      margin-top: 12px; padding: 12px 14px;
+      background: var(--brand-light); border: 1.5px solid var(--brand-mid);
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem; color: var(--text-muted); font-weight: 500; line-height: 1.6;
+    }
+    .term-tip strong { color: var(--brand-dark); }
+
+
+    .empty-state { text-align: center; padding: 60px 0; color: var(--text-dim); }
+    .empty-state span { display: block; font-size: 3rem; margin-bottom: 12px; }
+    .empty-state p { font-size: 0.9rem; font-weight: 600; }
+
+
+    .alpha-section-header {
+      font-size: 0.72rem; font-weight: 700; font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase; letter-spacing: 0.12em; color: var(--brand);
+      margin: 24px 0 10px; display: flex; align-items: center; gap: 8px;
+    }
+    .alpha-section-header::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    @keyframes fadeDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeUp   { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+
+    @media (max-width: 640px) {
+      .term-sections { grid-template-columns: 1fr; }
+      .term-body { padding: 16px; }
+      .hero { padding: 40px 20px 80px; }
+      .hero-stats { gap: 20px; }
+      .page { padding: 24px 16px 48px; }
+    }
+  </style>
 </head>
 <body>
-<header><h1>Insurance Dictionary A–Z</h1></header>
-<section>
-  <div class="term" onclick="toggleDesc('premium')">Premium</div>
-  <div class="desc" id="premium">Amount you pay monthly/yearly for insurance coverage.</div>
 
-  <div class="term" onclick="toggleDesc('deductible')">Deductible</div>
-  <div class="desc" id="deductible">Amount you pay before insurance starts covering expenses.</div>
 
-  <div class="term" onclick="toggleDesc('copay')">Copay</div>
-  <div class="desc" id="copay">Percentage or fixed amount you pay during a claim.</div>
+<div class="topbar">
+  <div class="topbar-brand"> WebHeal. </div>
+  <div class="topbar-tag">insurance guide</div>
+</div>
 
-  <div class="term" onclick="toggleDesc('waiting')">Waiting Period</div>
-  <div class="desc" id="waiting">Time before certain diseases are covered.</div>
 
-  <div class="term" onclick="toggleDesc('exclusion')">Exclusion</div>
-  <div class="desc" id="exclusion">Things the policy won't cover.</div>
-</section>
+<div class="hero">
+  <div class="hero-badge">📘 Beginner Friendly</div>
+  <h1>Health Insurance<br>A–Z Guide</h1>
+  <p>Everything you need to know about health insurance — explained simply, with real examples so you're never confused again.</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="s-num">28</div><div class="s-label">Terms Explained</div></div>
+    <div class="hero-stat"><div class="s-num">5</div><div class="s-label">Categories</div></div>
+    <div class="hero-stat"><div class="s-num">3</div><div class="s-label">Difficulty Levels</div></div>
+  </div>
+</div>
+
+
+<div class="search-float">
+  <div class="search-inner">
+    <span class="search-icon">🔍</span>
+    <input id="searchInput" placeholder="Search any insurance term…" oninput="filterTerms()">
+  </div>
+</div>
+
+
+<div class="page">
+
+
+  <div class="alpha-nav" id="alphNav"></div>
+
+
+  <div class="filter-row">
+    <div class="filter-chip active" onclick="setFilter('all', this)">🗂 All Terms</div>
+    <div class="filter-chip" onclick="setFilter('costs', this)">💰 Costs & Payments</div>
+    <div class="filter-chip" onclick="setFilter('coverage', this)">🛡 Coverage</div>
+    <div class="filter-chip" onclick="setFilter('claims', this)">📋 Claims</div>
+    <div class="filter-chip" onclick="setFilter('policy', this)">📄 Policy</div>
+    <div class="filter-chip" onclick="setFilter('network', this)">🏥 Network</div>
+  </div>
+
+
+  <div class="results-bar">
+    <div class="results-count" id="resultsCount">Showing all 28 terms</div>
+  </div>
+
+
+  <div class="terms-grid" id="termsGrid"></div>
+
+</div>
 
 <script>
-function toggleDesc(id){
-  const el=document.getElementById(id);
-  el.style.display=(el.style.display==='block')?'none':'block';
+const TERMS = [
+  {
+    letter: 'C', name: 'Claim', tagline: 'Your request for insurance to pay',
+    category: 'claims', level: 'basic',
+    desc: 'A claim is a formal request you make to your insurance company asking them to pay for a medical service or treatment you received. Think of it like submitting a bill to insurance.',
+    example: 'You visit a hospital and pay ₹5,000. You then submit a claim form to your insurer with the bill. They review it and reimburse you.',
+    keyFact: 'Claims can be cashless (hospital directly bills insurer) or reimbursement (you pay first, then get money back).',
+    tip: '💡 Always keep original bills and doctor\'s notes — you\'ll need them when filing a claim.'
+  },
+  {
+    letter: 'C', name: 'Copay / Co-payment', tagline: 'Your share of the bill',
+    category: 'costs', level: 'basic',
+    desc: 'Copay is a fixed amount or percentage of the medical bill that YOU must pay from your own pocket, even after insurance kicks in. Insurance pays the rest.',
+    example: 'Your policy has a 10% copay. Hospital bill = ₹1,00,000. You pay ₹10,000 and insurance pays ₹90,000.',
+    keyFact: 'Senior citizen plans often have higher copay (20–30%) because older people are higher risk.',
+    tip: '💡 Choose plans with 0% copay if possible — it costs a bit more in premium but saves money at hospitals.'
+  },
+  {
+    letter: 'C', name: 'Cashless Treatment', tagline: 'No upfront payment needed',
+    category: 'claims', level: 'basic',
+    desc: 'A facility where you can get treated at network hospitals without paying from your own pocket. The insurance company directly settles the bill with the hospital.',
+    example: 'You\'re admitted to a network hospital. You show your health card, fill a pre-authorization form, and the insurer pays the hospital directly — you pay nothing (except copay if any).',
+    keyFact: 'Only works at hospitals that are in your insurer\'s approved network list.',
+    tip: '💡 Always check if your preferred hospital is in the network list BEFORE buying a policy.'
+  },
+  {
+    letter: 'C', name: 'Critical Illness Cover', tagline: 'Lump-sum payout for serious diseases',
+    category: 'coverage', level: 'medium',
+    desc: 'A rider or standalone plan that pays you a fixed lump sum amount if you\'re diagnosed with a listed critical illness like cancer, heart attack, stroke, or kidney failure — regardless of your actual treatment cost.',
+    example: 'You buy a ₹10 lakh critical illness cover. You get diagnosed with cancer. Insurer pays ₹10 lakh directly to you — you can use it for treatment, rent, or anything.',
+    keyFact: 'Typically covers 10–37 listed critical illnesses. Read the list carefully before buying.',
+    tip: '💡 This is separate from regular health insurance. Both together give the best protection.'
+  },
+  {
+    letter: 'D', name: 'Deductible', tagline: 'You pay first, then insurance helps',
+    category: 'costs', level: 'basic',
+    desc: 'The deductible is the amount you must pay out of your own pocket before your insurance company starts paying. Think of it as a threshold — once you cross it, insurance takes over.',
+    example: 'Deductible = ₹5,000. Hospital bill = ₹30,000. You pay ₹5,000 first. Insurance pays the remaining ₹25,000.',
+    keyFact: 'Higher deductible = lower premium. Lower deductible = higher premium.',
+    tip: '💡 If you\'re young and healthy, a higher deductible plan with lower premium can save money annually.'
+  },
+  {
+    letter: 'D', name: 'Day Care Procedure', tagline: 'Treatments under 24 hours',
+    category: 'coverage', level: 'medium',
+    desc: 'Medical procedures that don\'t require 24-hour hospitalization due to advances in technology. Many modern policies cover these even though traditional policies required overnight stay.',
+    example: 'Cataract surgery, kidney stone removal, chemotherapy sessions, dialysis — these are done in a few hours but are covered as day care.',
+    keyFact: 'Old policies required 24-hour admission. New plans cover 200+ day care procedures.',
+    tip: '💡 Always confirm if your specific procedure is listed in the day care list before going in.'
+  },
+  {
+    letter: 'E', name: 'Exclusion', tagline: 'What your policy won\'t cover',
+    category: 'policy', level: 'basic',
+    desc: 'Exclusions are specific conditions, treatments, or circumstances that your insurance policy will NOT pay for. These are written clearly in your policy document.',
+    example: 'Common exclusions: cosmetic surgery, self-inflicted injuries, dental treatment (unless accident), infertility treatment, war injuries.',
+    keyFact: 'IRDAI mandates a standard list of exclusions all insurers must follow. Insurers can add more but not remove standard ones.',
+    tip: '💡 Read the exclusions list VERY carefully before buying. This is where most claim rejections happen.'
+  },
+  {
+    letter: 'E', name: 'Endorsement', tagline: 'Officially changing your policy',
+    category: 'policy', level: 'advanced',
+    desc: 'An endorsement is a written document that modifies, adds, or removes certain terms from your existing insurance policy. It\'s the official way to make changes after the policy is issued.',
+    example: 'You got married. You add your spouse to your family floater plan. The insurer issues an endorsement to officially update your policy.',
+    keyFact: 'Every endorsement has a date — coverage for the new member usually starts from that date only.',
+    tip: '💡 Always get a copy of the endorsement document and verify the changes are correctly reflected.'
+  },
+  {
+    letter: 'F', name: 'Family Floater Plan', tagline: 'One policy covers the whole family',
+    category: 'policy', level: 'basic',
+    desc: 'A single health insurance policy that covers all family members under one shared sum insured. Anyone in the family can use the full amount, but total claims can\'t exceed the sum insured.',
+    example: 'Family floater of ₹10 lakh. Dad uses ₹4 lakh. Mom uses ₹3 lakh. Son has ₹3 lakh remaining for the policy year.',
+    keyFact: 'Premiums are based on the oldest member\'s age. If eldest is 50+, the premium could be high.',
+    tip: '💡 Consider a super top-up along with a family floater for better coverage without high premiums.'
+  },
+  {
+    letter: 'G', name: 'Grace Period', tagline: 'Extra time to pay your premium',
+    category: 'policy', level: 'basic',
+    desc: 'The extra time given to you after your premium due date to pay without losing your coverage. During this period, your policy technically still stays active.',
+    example: 'Premium due date: 1 Jan. You forget to pay. Grace period: 30 days. If you pay by 30 Jan, coverage continues uninterrupted.',
+    keyFact: 'IRDAI mandates 30 days grace period for annual policies and 15 days for monthly policies.',
+    tip: '💡 Set auto-pay reminders — if you miss the grace period, you\'ll have to start a new policy with fresh waiting periods.'
+  },
+  {
+    letter: 'H', name: 'Health Card', tagline: 'Your insurance ID at the hospital',
+    category: 'policy', level: 'basic',
+    desc: 'A physical or digital card issued by your insurer that identifies you as a policyholder. It contains your policy number and helps hospitals process cashless claims quickly.',
+    example: 'You\'re rushed to a network hospital. You show your digital health card. The hospital contacts the insurer, gets approval, and treats you without you paying anything upfront.',
+    keyFact: 'Keep a digital copy on your phone — you might need it in an emergency at any time.',
+    tip: '💡 Some insurers now offer health card apps with hospital locators, claim tracking, and teleconsultation.'
+  },
+  {
+    letter: 'H', name: 'Hospital Cash Benefit', tagline: 'Daily cash while you\'re in hospital',
+    category: 'coverage', level: 'medium',
+    desc: 'A rider that pays you a fixed daily cash allowance for every day you\'re hospitalized, regardless of your actual medical expenses. It helps cover indirect costs like transport, food, or income loss.',
+    example: 'Hospital cash benefit: ₹1,000/day. You\'re hospitalized for 7 days. You receive ₹7,000 in addition to your regular medical claim.',
+    keyFact: 'This is over and above your regular health insurance payout — it\'s a separate, additional benefit.',
+    tip: '💡 Useful if you\'re self-employed and hospitalization means loss of income.'
+  },
+  {
+    letter: 'I', name: 'IRDAI', tagline: 'India\'s insurance watchdog',
+    category: 'policy', level: 'medium',
+    desc: 'Insurance Regulatory and Development Authority of India — the government body that regulates all insurance companies in India. It sets rules, protects policyholders, and ensures fair practices.',
+    example: 'If your insurer wrongly rejects your claim, you can escalate to IRDAI\'s Bima Bharosa portal for a resolution.',
+    keyFact: 'IRDAI mandates that insurers must settle claims within 30 days of receiving all documents.',
+    tip: '💡 Know your rights. If an insurer delays or unfairly rejects your claim, IRDAI is your ally.'
+  },
+  {
+    letter: 'I', name: 'Insured / Policyholder', tagline: 'Who\'s covered vs who bought the policy',
+    category: 'policy', level: 'basic',
+    desc: 'The policyholder is the person who bought the insurance. The insured is the person whose health is covered. They can be the same person or different (e.g. father buys, family is insured).',
+    example: 'Ravi buys a family floater. Ravi = policyholder. His wife and kids = insured members. All are covered under the same policy.',
+    keyFact: 'In group insurance from employers, the employer is the policyholder and employees are insured.',
+    tip: '💡 Even if you\'re not the policyholder, you still have rights as an insured — especially for claim filing.'
+  },
+  {
+    letter: 'L', name: 'Loading', tagline: 'Extra premium for higher risk',
+    category: 'costs', level: 'advanced',
+    desc: 'Loading is an additional charge added to your premium because of a pre-existing condition or lifestyle risk factor that makes you a higher-risk customer for the insurer.',
+    example: 'You\'re diabetic. Standard premium for your age: ₹12,000/year. Insurer adds 20% loading. Your actual premium: ₹14,400/year.',
+    keyFact: 'IRDAI guidelines limit loading and require insurers to disclose it clearly. It reduces or disappears over time with no claims.',
+    tip: '💡 If you\'re loaded, be honest about all health conditions upfront. Non-disclosure can lead to claim rejection later.'
+  },
+  {
+    letter: 'M', name: 'Maternity Benefit', tagline: 'Coverage for pregnancy costs',
+    category: 'coverage', level: 'medium',
+    desc: 'A benefit that covers expenses related to pregnancy including pre-natal care, delivery (normal or caesarean), and post-natal care. Usually available as a rider or in premium plans.',
+    example: 'Maternity benefit of ₹50,000. Normal delivery costs ₹45,000. Insurance covers all of it. Caesarean with limit of ₹50,000 also fully covered.',
+    keyFact: 'Almost all maternity benefits have a waiting period of 2–4 years. Plan ahead!',
+    tip: '💡 Buy a policy with maternity cover well before planning a family — don\'t wait until you\'re pregnant.'
+  },
+  {
+    letter: 'N', name: 'Network Hospital', tagline: 'Hospitals tied up with your insurer',
+    category: 'network', level: 'basic',
+    desc: 'Hospitals that have a formal agreement with your insurance company to provide cashless treatment. These hospitals directly bill the insurer — you don\'t have to pay upfront.',
+    example: 'You\'re insured with Star Health. Apollo, Fortis, and thousands more are in their network. You can walk in and get cashless treatment.',
+    keyFact: 'India\'s top insurers have 10,000–25,000+ network hospitals across the country.',
+    tip: '💡 Bookmark your insurer\'s hospital locator app. In an emergency, you\'ll know exactly where to go.'
+  },
+  {
+    letter: 'N', name: 'No Claim Bonus (NCB)', tagline: 'Reward for staying healthy',
+    category: 'costs', level: 'basic',
+    desc: 'A benefit where your insurance coverage increases (or premium decreases) for every year you don\'t make a claim. It\'s a reward for being healthy and not using insurance unnecessarily.',
+    example: 'You didn\'t make any claims this year. Your ₹5 lakh cover gets bumped to ₹5.5 lakh next year at no extra cost — that\'s a 10% NCB.',
+    keyFact: 'NCB can accumulate up to 50–100% of the sum insured depending on the insurer.',
+    tip: '💡 For small expenses below your deductible, it\'s often smarter to pay out of pocket and preserve your NCB.'
+  },
+  {
+    letter: 'O', name: 'Out-of-Pocket Maximum', tagline: 'The most you\'ll ever pay in a year',
+    category: 'costs', level: 'medium',
+    desc: 'The maximum total amount you\'ll have to pay from your own pocket in a policy year. After reaching this limit, your insurance covers 100% of covered expenses.',
+    example: 'Out-of-pocket max: ₹30,000. You pay ₹10,000 deductible + ₹20,000 in copays = ₹30,000. After that, every medical expense is fully covered.',
+    keyFact: 'Premium payments don\'t count toward the out-of-pocket maximum — only actual medical costs do.',
+    tip: '💡 This protects you from catastrophic expenses in case of a major illness or surgery.'
+  },
+  {
+    letter: 'P', name: 'Premium', tagline: 'The cost to keep your insurance active',
+    category: 'costs', level: 'basic',
+    desc: 'The amount you pay to your insurance company regularly (monthly or annually) to keep your health insurance policy active. Think of it as a subscription fee for your health protection.',
+    example: 'Annual premium: ₹15,000 for ₹10 lakh coverage. You pay ₹15,000 — that\'s your premium regardless of whether you use insurance or not.',
+    keyFact: 'Premiums are determined by age, health history, location, sum insured, and the plan type.',
+    tip: '💡 Buying young means cheaper premiums locked in for life. A ₹5 lakh cover at 25 costs far less than at 45.'
+  },
+  {
+    letter: 'P', name: 'Pre-existing Disease (PED)', tagline: 'Health conditions you already had',
+    category: 'coverage', level: 'medium',
+    desc: 'Any disease or medical condition you had before buying the insurance policy. Insurers typically exclude these initially and cover them only after a waiting period (usually 2–4 years).',
+    example: 'You have diabetes before buying a policy. The insurer may not cover diabetes-related claims for the first 3 years. After 3 years, it\'s fully covered.',
+    keyFact: 'IRDAI has standardized PED waiting periods. After 8 continuous years with the same insurer, all PEDs must be covered.',
+    tip: '💡 Always disclose ALL pre-existing conditions honestly — hiding them can lead to claim rejection when you need it most.'
+  },
+  {
+    letter: 'P', name: 'Portability', tagline: 'Switch insurers without losing benefits',
+    category: 'policy', level: 'medium',
+    desc: 'The right to transfer your health insurance policy from one insurer to another without losing continuity benefits like waiting period credits and no-claim bonus.',
+    example: 'You\'ve been with Insurer A for 3 years (2 years of PED waiting period completed). You switch to Insurer B. Insurer B must give you credit for 2 years already served.',
+    keyFact: 'Apply for portability 45–60 days before renewal. You can\'t port in the middle of a policy year.',
+    tip: '💡 Port if your current insurer has poor claim settlement ratio, poor service, or you find a better plan elsewhere.'
+  },
+  {
+    letter: 'R', name: 'Restoration Benefit', tagline: 'Refills your coverage after a big claim',
+    category: 'coverage', level: 'medium',
+    desc: 'A feature that automatically restores (refills) your sum insured if it gets exhausted during the policy year due to a large claim. This ensures you\'re protected even after using up your base coverage.',
+    example: 'Sum insured: ₹5 lakh. You make a claim of ₹5 lakh (fully exhausted). Restoration kicks in — your cover is refilled to ₹5 lakh for the rest of the year.',
+    keyFact: 'Some policies restore only for different illnesses, others restore even for the same illness. Read the fine print!',
+    tip: '💡 Restoration is especially valuable for families — if one member exhausts the cover, others are still protected.'
+  },
+  {
+    letter: 'R', name: 'Rider', tagline: 'Extra coverage added to your base plan',
+    category: 'policy', level: 'medium',
+    desc: 'An optional add-on benefit you can attach to your base health insurance policy for additional coverage. Riders cost extra but enhance your protection significantly.',
+    example: 'Base plan: ₹5 lakh cover. Add critical illness rider: ₹10 lakh lump sum for serious diseases. Total premium increases slightly but you\'re much better protected.',
+    keyFact: 'Common riders: critical illness, personal accident, maternity, hospital cash, OPD, room rent waiver.',
+    tip: '💡 Choose riders based on your life stage. Young parents need maternity riders. Senior parents need critical illness riders.'
+  },
+  {
+    letter: 'S', name: 'Sum Insured', tagline: 'Maximum your insurance will pay',
+    category: 'policy', level: 'basic',
+    desc: 'The maximum amount your insurance company will pay for claims in a single policy year. It\'s the upper limit of your coverage — once exhausted, you pay further costs yourself.',
+    example: 'Sum insured: ₹10 lakh. You have claims of ₹12 lakh in a year. Insurance pays ₹10 lakh. You pay ₹2 lakh from pocket.',
+    keyFact: 'Experts recommend a minimum of ₹10–15 lakh for individuals and ₹20–25 lakh for families in India today.',
+    tip: '💡 Medical inflation is ~12% per year in India. What ₹5 lakh covered in 2015 might not cover in 2025.'
+  },
+  {
+    letter: 'S', name: 'Sub-limit', tagline: 'Cap on specific treatment costs',
+    category: 'coverage', level: 'advanced',
+    desc: 'A cap on the maximum amount insurance will pay for a specific treatment or room type, even if your total sum insured is higher. Sub-limits restrict coverage for certain categories.',
+    example: 'Sum insured: ₹10 lakh. Sub-limit on room rent: ₹5,000/day. If hospital charges ₹8,000/day, you pay the ₹3,000 difference every day yourself.',
+    keyFact: 'Room rent sub-limits are especially tricky — upgrading your room can proportionally reduce your entire claim.',
+    tip: '💡 Choose plans with no or minimal sub-limits. "No Room Rent Cap" policies are worth the extra premium.'
+  },
+  {
+    letter: 'T', name: 'Third Party Administrator (TPA)', tagline: 'The middleman between you and insurer',
+    category: 'claims', level: 'advanced',
+    desc: 'A licensed intermediary appointed by insurance companies to manage health insurance services including claim processing, cashless authorization, and policyholder servicing.',
+    example: 'You\'re hospitalized. The hospital calls Medi Assist (a TPA). Medi Assist verifies your policy, approves cashless treatment, and settles the bill with your insurer.',
+    keyFact: 'Some large insurers now do in-house claim processing instead of using TPAs — this is usually faster.',
+    tip: '💡 Know your TPA\'s helpline number. They\'re your first point of contact during hospitalization emergencies.'
+  },
+  {
+    letter: 'W', name: 'Waiting Period', tagline: 'Time before you can claim for certain conditions',
+    category: 'coverage', level: 'basic',
+    desc: 'A defined period after buying a policy during which you cannot make claims for specific conditions. Different types of waiting periods apply to different conditions.',
+    example: 'Initial waiting period: 30 days (no claims at all except accidents). PED waiting period: 3 years. Specific disease waiting period: 2 years.',
+    keyFact: 'Standard initial waiting period is 30 days. Critical illnesses often have a 90-day waiting period.',
+    tip: '💡 Buy insurance when you\'re young and healthy — serve the waiting period while you don\'t need it.'
+  },
+  {
+    letter: 'W', name: 'Wellness Benefits', tagline: 'Rewards for staying healthy',
+    category: 'coverage', level: 'medium',
+    desc: 'Incentives and rewards provided by insurers to encourage healthy behaviors like regular exercise, health check-ups, maintaining a healthy BMI, and quitting smoking.',
+    example: 'You complete 10,000 steps daily tracked via app. Insurer gives you OPD credits, gym fee reimbursements, or premium discounts as wellness rewards.',
+    keyFact: 'Insurers partner with fitness apps, wearables, and gyms to track and reward healthy habits.',
+    tip: '💡 Some insurers offer up to 30% premium discount for maintaining healthy habits consistently over the year.'
+  }
+];
+
+let activeFilter = 'all';
+let activeAlpha = 'all';
+
+function renderAlphNav() {
+  const letters = [...new Set(TERMS.map(t => t.letter))].sort();
+  const nav = document.getElementById('alphNav');
+  const allBtn = document.createElement('div');
+  allBtn.className = 'alpha-btn active'; allBtn.textContent = 'All';
+  allBtn.onclick = () => { activeAlpha = 'all'; document.querySelectorAll('.alpha-btn').forEach(b => b.classList.remove('active')); allBtn.classList.add('active'); renderTerms(); };
+  nav.appendChild(allBtn);
+
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(l => {
+    const btn = document.createElement('div');
+    btn.className = 'alpha-btn' + (letters.includes(l) ? '' : ' disabled');
+    btn.textContent = l;
+    btn.onclick = () => {
+      activeAlpha = l;
+      document.querySelectorAll('.alpha-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderTerms();
+    };
+    nav.appendChild(btn);
+  });
 }
+
+function setFilter(cat, el) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderTerms();
+}
+
+function filterTerms() { renderTerms(); }
+
+function levelClass(l) { return 'badge badge-lvl-' + l; }
+function catClass(c)   { return 'badge badge-cat-' + c; }
+function catLabel(c)   { return { costs:'💰 Costs', coverage:'🛡 Coverage', claims:'📋 Claims', policy:'📄 Policy', network:'🏥 Network' }[c] || c; }
+function levelLabel(l) { return { basic:'⭐ Basic', medium:'⭐⭐ Medium', advanced:'⭐⭐⭐ Advanced' }[l] || l; }
+
+function renderTerms() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  let filtered = TERMS.filter(t => {
+    const matchQ = !q || t.name.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q) || t.tagline.toLowerCase().includes(q);
+    const matchCat = activeFilter === 'all' || t.category === activeFilter;
+    const matchAlpha = activeAlpha === 'all' || t.letter === activeAlpha;
+    return matchQ && matchCat && matchAlpha;
+  });
+
+  const grid = document.getElementById('termsGrid');
+  grid.innerHTML = '';
+
+  document.getElementById('resultsCount').textContent =
+    filtered.length === TERMS.length ? `Showing all ${TERMS.length} terms` : `Showing ${filtered.length} of ${TERMS.length} terms`;
+
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="empty-state"><span>🔍</span><p>No terms found. Try a different search.</p></div>';
+    return;
+  }
+
+
+  const byLetter = {};
+  filtered.forEach(t => { (byLetter[t.letter] = byLetter[t.letter] || []).push(t); });
+
+  Object.keys(byLetter).sort().forEach(letter => {
+    const hdr = document.createElement('div');
+    hdr.className = 'alpha-section-header'; hdr.textContent = letter;
+    grid.appendChild(hdr);
+
+    byLetter[letter].forEach((t, i) => {
+      const card = document.createElement('div');
+      card.className = 'term-card';
+      card.innerHTML = `
+        <div class="term-header" onclick="toggleCard(this)">
+          <div class="term-letter">${t.letter}</div>
+          <div class="term-meta">
+            <div class="term-name">${t.name}</div>
+            <div class="term-tagline">${t.tagline}</div>
+          </div>
+          <div class="term-badges">
+            <span class="${catClass(t.category)}">${catLabel(t.category)}</span>
+            <span class="${levelClass(t.level)}">${levelLabel(t.level)}</span>
+          </div>
+          <div class="term-chevron">▾</div>
+        </div>
+        <div class="term-body">
+          <p class="term-desc">${t.desc}</p>
+          <div class="term-sections">
+            <div class="term-section">
+              <div class="ts-label">📌 Real Example</div>
+              <div class="ts-text">${t.example}</div>
+            </div>
+            <div class="term-section">
+              <div class="ts-label">💡 Key Fact</div>
+              <div class="ts-text">${t.keyFact}</div>
+            </div>
+          </div>
+          <div class="term-tip">${t.tip}</div>
+        </div>`;
+      grid.appendChild(card);
+    });
+  });
+}
+
+function toggleCard(header) {
+  const card = header.parentElement;
+  const isOpen = card.classList.contains('open');
+
+  document.querySelectorAll('.term-card.open').forEach(c => c.classList.remove('open'));
+  if (!isOpen) card.classList.add('open');
+}
+
+renderAlphNav();
+renderTerms();
 </script>
 </body>
 </html>
