@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Health Calculator Hub — HealApp</title>
+<style>
+:root {
+  --brand:#00b894; --brand-dark:#009e7e; --brand-light:#e6f9f4;
+  --brand-mid:#b2ede1; --bg:#f2faf7; --surface:#ffffff;
+  --surface2:#f7fdfb; --border:#d0ede5; --text:#0f2d25;
+  --text-muted:#3d7a68; --text-dim:#8fbfb3;
+  --radius:16px; --radius-sm:10px;
+  --shadow:0 2px 16px rgba(0,184,148,0.08);
+  --shadow-md:0 6px 28px rgba(0,184,148,0.13);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Times New Roman',Times,serif;background:var(--bg);color:var(--text);min-height:100vh;}
+.topbar{background:var(--brand);height:56px;display:flex;align-items:center;padding:0 28px;box-shadow:0 2px 12px rgba(0,184,148,0.3);position:sticky;top:0;z-index:200;}
+.topbar-brand{color:#fff;font-size:1.2rem;font-weight:bold;font-style:italic;}
+.topbar-tag{margin-left:auto;font-size:0.75rem;color:rgba(255,255,255,0.75);letter-spacing:0.1em;text-transform:uppercase;}
+.hero{background:linear-gradient(135deg,var(--brand) 0%,#00c9a7 100%);padding:52px 24px 100px;text-align:center;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4z'/%3E%3C/g%3E%3C/svg%3E");}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.35);color:#fff;border-radius:20px;padding:5px 14px;font-size:0.75rem;font-weight:bold;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:14px;position:relative;}
+.hero h1{font-size:clamp(1.8rem,4vw,2.6rem);font-weight:bold;font-style:italic;color:#fff;margin-bottom:10px;position:relative;}
+.hero p{font-size:0.95rem;color:rgba(255,255,255,0.85);max-width:500px;margin:0 auto;line-height:1.7;position:relative;}
+.page{max-width:860px;margin:0 auto;padding:0 24px 60px;}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:-52px;position:relative;z-index:10;}
+.calc-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow-md);text-decoration:none;color:var(--text);transition:all 0.2s;position:relative;overflow:hidden;display:flex;align-items:flex-start;gap:16px;animation:fadeUp 0.4s ease both;}
+.calc-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--brand),#00d4aa);}
+.calc-card:hover{box-shadow:var(--shadow-md);transform:translateY(-3px);border-color:var(--brand-mid);}
+.card-icon{width:52px;height:52px;border-radius:14px;background:var(--brand-light);border:1.5px solid var(--brand-mid);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;}
+.card-body{flex:1;}
+.card-title{font-size:1.05rem;font-weight:bold;color:var(--text);margin-bottom:5px;}
+.card-sub{font-size:0.8rem;color:var(--text-muted);line-height:1.5;}
+.card-arrow{margin-left:auto;color:var(--brand);font-size:1rem;flex-shrink:0;margin-top:4px;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+@media(max-width:640px){.grid{grid-template-columns:1fr;margin-top:-28px;}.page{padding:0 14px 48px;}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-brand">WebHeal.</div>
+  <div class="topbar-tag">Health Calculator Hub</div>
+</div>
+<div class="hero">
+  <div class="hero-badge">⚡ Five Smart Calculators</div>
+  <h1>Health Calculator Hub</h1>
+  <p>Advanced health metrics — body composition, metabolism, fitness performance, risk indicators and nutrition, all in one place.</p>
+</div>
+<div class="page">
+  <div class="grid">
+    <a class="calc-card" href="{{ url_for('body') }}" style="animation-delay:0s;">
+      <div class="card-icon">💪</div>
+      <div class="card-body">
+        <div class="card-title">Body Composition</div>
+        <div class="card-sub">BMI, Body Fat %, Lean Body Mass, WHR, Waist-to-Height Ratio</div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+    <a class="calc-card" href="{{ url_for('meta') }}" style="animation-delay:0.06s;">
+      <div class="card-icon">🔥</div>
+      <div class="card-body">
+        <div class="card-title">Metabolism & Energy</div>
+        <div class="card-sub">BMR (3 formulas), TDEE, Calorie Goals, Metabolic Age</div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+    <a class="calc-card" href="{{ url_for('fit') }}" style="animation-delay:0.12s;">
+      <div class="card-icon">🏃</div>
+      <div class="card-body">
+        <div class="card-title">Fitness & Performance</div>
+        <div class="card-sub">VO₂ Max, Heart Rate Zones, 1RM Strength, Running Pace</div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+    <a class="calc-card" href="{{ url_for('risk') }}" style="animation-delay:0.18s;">
+      <div class="card-icon">❤️</div>
+      <div class="card-body">
+        <div class="card-title">Health Risk Indicators</div>
+        <div class="card-sub">Obesity Class, Blood Pressure, Diabetes Risk, ABSI Score</div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+    <a class="calc-card" href="{{ url_for('nutrition') }}" style="animation-delay:0.24s;">
+      <div class="card-icon">🥗</div>
+      <div class="card-body">
+        <div class="card-title">Nutrition & Wellness</div>
+        <div class="card-sub">Macronutrients, Water Intake, Protein Goal, Fasting Planner</div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
+  </div>
+</div>
+</body>
+</html>
+
+
