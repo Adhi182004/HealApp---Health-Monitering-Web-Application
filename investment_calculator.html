@@ -1,31 +1,1132 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Investment Calculator</title>
-<style>
-body{font-family:Arial;background:#f5f5f5;margin:0;padding:0;}
-header{background:#2196f3;color:white;text-align:center;padding:20px;}
-section{max-width:600px;margin:20px auto;background:white;padding:20px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
-label{display:block;margin-top:10px;}
-input{width:100%;padding:7px;margin-top:5px;border-radius:5px;border:1px solid #ccc;}
-button{margin-top:10px;padding:10px 15px;background:#2196f3;color:white;border:none;border-radius:5px;cursor:pointer;}
-.result{margin-top:15px;padding:10px;background:#e3f2fd;border-radius:5px;}
-</style>
+  <meta charset="UTF-8">
+  <title>Investment Calculator — WebHeal.</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --brand:        #00b894;
+      --brand-dark:   #009e7e;
+      --brand-light:  #e6f9f4;
+      --brand-mid:    #b2ede1;
+      --brand-glow:   rgba(0,184,148,0.13);
+      --bg:           #f2faf7;
+      --surface:      #ffffff;
+      --surface2:     #f7fdfb;
+      --border:       #d0ede5;
+      --text:         #0f2d25;
+      --text-muted:   #3d7a68;
+      --text-dim:     #8fbfb3;
+      --danger:       #e74c3c;
+      --warn:         #f39c12;
+      --purple:       #8b5cf6;
+      --blue:         #3b82f6;
+      --radius:       16px;
+      --radius-sm:    10px;
+      --shadow:       0 2px 16px rgba(0,184,148,0.08);
+      --shadow-md:    0 6px 28px rgba(0,184,148,0.13);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Times New Roman', Times, serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── TOPBAR ── */
+    .topbar { background: var(--brand); height: 56px; display: flex; align-items: center; padding: 0 28px; box-shadow: 0 2px 12px rgba(0,184,148,0.3); position: sticky; top: 0; z-index: 200; }
+    .topbar-brand { color: #fff; font-size: 1.2rem; font-weight: bold; font-style: italic; }
+    .topbar-tag { margin-left: auto; font-size: 0.75rem; color: rgba(255,255,255,0.75); letter-spacing: 0.1em; text-transform: uppercase; }
+
+    /* ── HERO ── */
+    .hero { background: linear-gradient(135deg, var(--brand) 0%, #00c9a7 100%); padding: 44px 24px 90px; text-align: center; position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+    .hero-badge { display: inline-flex; align-items: center; gap: 7px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.35); color: #fff; border-radius: 20px; padding: 5px 14px; font-size: 0.75rem; font-weight: bold; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 14px; position: relative; }
+    .hero h1 { font-size: clamp(1.8rem,4vw,2.6rem); font-weight: bold; font-style: italic; color: #fff; line-height: 1.1; margin-bottom: 10px; position: relative; }
+    .hero p { font-size: 0.95rem; color: rgba(255,255,255,0.85); max-width: 520px; margin: 0 auto; line-height: 1.6; position: relative; }
+
+    /* ── PAGE ── */
+    .page { max-width: 1100px; margin: 0 auto; padding: 0 24px 60px; }
+
+    /* ── TOOL SELECTOR CARDS ── */
+    .tools-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-top: -46px; margin-bottom: 28px; position: relative; z-index: 10; }
+    .tool-card {
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: var(--radius); padding: 18px 14px; text-align: center;
+      cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow-md);
+      position: relative; overflow: hidden;
+    }
+    .tool-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--border); transition: background 0.2s; }
+    .tool-card:hover, .tool-card.active { border-color: var(--brand); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,184,148,0.18); }
+    .tool-card.active::after { background: linear-gradient(90deg, var(--brand), #00d4aa); }
+    .tool-card.active { background: var(--brand-light); }
+    .tc-icon { font-size: 1.8rem; margin-bottom: 8px; display: block; }
+    .tc-name { font-size: 0.85rem; font-weight: bold; color: var(--text); }
+    .tc-desc { font-size: 0.72rem; color: var(--text-dim); margin-top: 3px; }
+    .tool-card.active .tc-name { color: var(--brand-dark); }
+
+    /* MORE TOOLS ROW */
+    .more-tools { display: grid; grid-template-columns: repeat(6,1fr); gap: 10px; margin-bottom: 28px; }
+    .more-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px 8px; text-align: center; cursor: pointer; transition: all 0.18s; box-shadow: var(--shadow); }
+    .more-card:hover, .more-card.active { background: var(--brand-light); border-color: var(--brand); }
+    .more-card.active .mc-name { color: var(--brand-dark); font-weight: bold; }
+    .mc-icon { font-size: 1.3rem; display: block; margin-bottom: 5px; }
+    .mc-name { font-size: 0.75rem; font-weight: bold; color: var(--text-muted); }
+
+    /* ── MAIN GRID ── */
+    .calc-grid { display: grid; grid-template-columns: 380px 1fr; gap: 24px; align-items: start; }
+
+    /* ── PANEL ── */
+    .panel { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 26px; box-shadow: var(--shadow-md); position: relative; overflow: hidden; animation: fadeUp 0.4s ease both; }
+    .panel::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--brand), #00d4aa); }
+
+    .panel-title { font-size: 0.78rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.12em; color: var(--brand); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+    .panel-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* FIELDS */
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 0.85rem; font-weight: bold; color: var(--text); margin-bottom: 6px; }
+    .field-hint { font-size: 0.75rem; color: var(--text-dim); margin-top: 3px; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    input[type="number"], input[type="text"], select, input[type="range"] {
+      width: 100%; padding: 11px 14px; background: var(--surface2); border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: 'Times New Roman', serif; font-size: 0.95rem; color: var(--text); outline: none; transition: border-color 0.2s, box-shadow 0.2s; appearance: none;
+    }
+    input:focus, select:focus { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-glow); background: #fff; }
+    input::placeholder { color: var(--text-dim); }
+    input[type="range"] { padding: 0; height: 6px; background: var(--border); border-radius: 10px; border: none; box-shadow: none; margin-top: 6px; }
+    input[type="range"]::-webkit-slider-thumb { appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--brand); cursor: pointer; border: 3px solid #fff; box-shadow: 0 2px 8px rgba(0,184,148,0.4); }
+    .range-labels { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-dim); margin-top: 3px; }
+
+    .select-wrap { position: relative; }
+    .select-wrap::after { content: '▾'; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--brand); pointer-events: none; }
+
+    /* COMPOUNDING TOGGLE */
+    .compound-opts { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+    .copt { padding: 5px 12px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--surface2); color: var(--text-muted); font-size: 0.76rem; font-weight: bold; cursor: pointer; transition: all 0.18s; font-family: 'Times New Roman', serif; }
+    .copt.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+
+    /* INFLATION TOGGLE */
+    .toggle-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .toggle-label { font-size: 0.85rem; font-weight: bold; color: var(--text); }
+    .toggle-switch { position: relative; width: 44px; height: 24px; cursor: pointer; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 20px; transition: background 0.2s; }
+    .toggle-slider::before { content: ''; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: transform 0.2s; }
+    .toggle-switch input:checked + .toggle-slider { background: var(--brand); }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+    /* BUTTONS */
+    .btn-calc { width: 100%; padding: 14px; background: var(--brand); color: #fff; border: none; border-radius: var(--radius-sm); font-family: 'Times New Roman', serif; font-size: 1rem; font-weight: bold; cursor: pointer; transition: background 0.2s, transform 0.15s, box-shadow 0.2s; box-shadow: 0 4px 18px rgba(0,184,148,0.32); margin-top: 4px; }
+    .btn-calc:hover { background: var(--brand-dark); transform: translateY(-1px); }
+
+    /* RESULTS */
+    .result-section { display: none; }
+    .result-section.show { display: block; animation: fadeUp 0.4s ease both; }
+
+    /* STAT GRID */
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+    .stat-tile { background: var(--surface2); border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 14px; text-align: center; }
+    .stat-tile.hl-green  { background: var(--brand-light); border-color: var(--brand-mid); }
+    .stat-tile.hl-red    { background: #fff0f0; border-color: #ffd6d6; }
+    .stat-tile.hl-purple { background: #f3f0ff; border-color: #d4c5ff; }
+    .stat-tile.hl-blue   { background: #eff6ff; border-color: #bfdbfe; }
+    .st-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: bold; margin-bottom: 5px; }
+    .st-value { font-size: 1.2rem; font-weight: bold; font-style: italic; color: var(--text); }
+    .hl-green  .st-value { color: var(--brand); }
+    .hl-red    .st-value { color: var(--danger); }
+    .hl-purple .st-value { color: var(--purple); }
+    .hl-blue   .st-value { color: var(--blue); }
+
+    /* INSIGHT */
+    .insight-box { background: var(--brand-light); border: 1.5px solid var(--brand-mid); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 20px; font-size: 0.9rem; color: var(--text-muted); line-height: 1.7; }
+    .insight-box strong { color: var(--brand-dark); }
+
+    /* VIEW TABS */
+    .view-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .view-tab { padding: 7px 16px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--surface2); color: var(--text-muted); font-size: 0.82rem; font-weight: bold; cursor: pointer; transition: all 0.18s; font-family: 'Times New Roman', serif; }
+    .view-tab.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+
+    .tab-view { display: none; }
+    .tab-view.show { display: block; animation: fadeUp 0.3s ease both; }
+
+    /* CHART */
+    .chart-wrap { position: relative; height: 260px; margin-bottom: 16px; }
+
+    /* TABLE */
+    .yr-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .yr-table th { background: var(--brand); color: #fff; padding: 9px 12px; text-align: right; font-weight: bold; font-size: 0.76rem; }
+    .yr-table th:first-child { text-align: left; }
+    .yr-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: var(--text-muted); text-align: right; }
+    .yr-table td:first-child { text-align: left; font-weight: bold; color: var(--text); }
+    .yr-table tr:nth-child(even) td { background: var(--surface2); }
+    .yr-table tr:last-child td { font-weight: bold; color: var(--text); background: var(--brand-light); border-bottom: none; }
+    .table-wrap { max-height: 280px; overflow-y: auto; border: 1.5px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 16px; }
+
+    /* COMPARE TABLE */
+    .compare-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; margin-bottom: 16px; }
+    .compare-table th { background: var(--brand); color: #fff; padding: 9px 12px; text-align: left; font-weight: bold; }
+    .compare-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
+    .compare-table tr:nth-child(even) td { background: var(--surface2); }
+    .compare-table .best-row td { background: var(--brand-light); font-weight: bold; color: var(--brand-dark); }
+
+    /* GOAL TRACKER */
+    .goal-bar-wrap { margin-bottom: 16px; }
+    .goal-label { font-size: 0.82rem; font-weight: bold; color: var(--text-muted); margin-bottom: 6px; display: flex; justify-content: space-between; }
+    .goal-bar { height: 12px; background: var(--border); border-radius: 10px; overflow: hidden; }
+    .goal-fill { height: 100%; background: linear-gradient(90deg, var(--brand), #00d4aa); border-radius: 10px; transition: width 0.6s ease; }
+
+    /* PLACEHOLDER */
+    .placeholder { text-align: center; padding: 56px 0; color: var(--text-dim); }
+    .placeholder span { display: block; font-size: 3rem; margin-bottom: 12px; }
+    .placeholder p { font-size: 0.92rem; font-style: italic; }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+
+    @media (max-width: 900px) {
+      .tools-row { grid-template-columns: repeat(2,1fr); }
+      .more-tools { grid-template-columns: repeat(3,1fr); }
+      .calc-grid  { grid-template-columns: 1fr; }
+      .page { padding: 0 16px 48px; }
+    }
+    @media (max-width: 500px) {
+      .tools-row  { grid-template-columns: repeat(2,1fr); }
+      .more-tools { grid-template-columns: repeat(3,1fr); }
+      .field-row  { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
-<header><h1>Investment Calculator</h1></header>
-<section>
-<form method="POST">
-<label>Principal Amount (₹): <input type="number" name="principal" required></label>
-<label>Years: <input type="number" name="years" required></label>
-<label>Annual Interest Rate (%): <input type="number" name="rate" required></label>
-<button type="submit">Calculate</button>
-</form>
 
-{% if future %}
-<div class="result">Future Value: ₹{{ future|round(2) }}</div>
-{% endif %}
-</section>
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-brand">WebHeal.</div>
+  <div class="topbar-tag">FinHealth · Investment Hub</div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">💰 Financial Investment Tools</div>
+  <h1>Investment Calculator Hub</h1>
+  <p>FD, RD, PPF, NSC, Gold, Stocks, NPS and more — all in one place with inflation-adjusted returns and goal planning.</p>
+</div>
+
+<div class="page">
+
+  <!-- TOP TOOL CARDS -->
+  <div class="tools-row">
+    <div class="tool-card active" id="tool-fd" onclick="selectTool('fd',this)">
+      <span class="tc-icon">🏦</span>
+      <div class="tc-name">Fixed Deposit</div>
+      <div class="tc-desc">Guaranteed returns</div>
+    </div>
+    <div class="tool-card" id="tool-rd" onclick="selectTool('rd',this)">
+      <span class="tc-icon">📅</span>
+      <div class="tc-name">Recurring Deposit</div>
+      <div class="tc-desc">Monthly savings</div>
+    </div>
+    <div class="tool-card" id="tool-ppf" onclick="selectTool('ppf',this)">
+      <span class="tc-icon">🏛</span>
+      <div class="tc-name">PPF</div>
+      <div class="tc-desc">Tax-free long term</div>
+    </div>
+    <div class="tool-card" id="tool-nsc" onclick="selectTool('nsc',this)">
+      <span class="tc-icon">📜</span>
+      <div class="tc-name">NSC</div>
+      <div class="tc-desc">Govt savings cert</div>
+    </div>
+  </div>
+
+  <!-- MORE TOOLS -->
+  <div class="more-tools">
+    <div class="more-card" id="tool-gold" onclick="selectTool('gold',this)">
+      <span class="mc-icon">🥇</span>
+      <div class="mc-name">Gold</div>
+    </div>
+    <div class="more-card" id="tool-stocks" onclick="selectTool('stocks',this)">
+      <span class="mc-icon">📈</span>
+      <div class="mc-name">Stocks / MF</div>
+    </div>
+    <div class="more-card" id="tool-nps" onclick="selectTool('nps',this)">
+      <span class="mc-icon">🎯</span>
+      <div class="mc-name">NPS</div>
+    </div>
+    <div class="more-card" id="tool-simple" onclick="selectTool('simple',this)">
+      <span class="mc-icon">➕</span>
+      <div class="mc-name">Simple Interest</div>
+    </div>
+    <div class="more-card" id="tool-compare" onclick="selectTool('compare',this)">
+      <span class="mc-icon">⚖️</span>
+      <div class="mc-name">Compare All</div>
+    </div>
+    <div class="more-card" id="tool-goal" onclick="selectTool('goal',this)">
+      <span class="mc-icon">🎯</span>
+      <div class="mc-name">Goal Planner</div>
+    </div>
+  </div>
+
+  <!-- CALC GRID -->
+  <div class="calc-grid">
+
+    <!-- LEFT: INPUT -->
+    <div class="panel" id="inputPanel">
+      <div class="panel-title" id="inputTitle">🏦 Fixed Deposit</div>
+      <div id="inputForm"></div>
+    </div>
+
+    <!-- RIGHT: RESULT -->
+    <div class="panel">
+      <div class="panel-title" id="resultTitle">📊 Results</div>
+
+      <div class="placeholder" id="placeholder">
+        <span>💰</span>
+        <p>Select a tool and fill in details to see your investment projection</p>
+      </div>
+
+      <div class="result-section" id="resultSection">
+
+        <div class="insight-box" id="insightBox"></div>
+
+        <div class="stat-grid" id="statGrid"></div>
+
+        <!-- GOAL BAR (shown for goal planner) -->
+        <div id="goalBarSection" style="display:none;" class="goal-bar-wrap">
+          <div class="goal-label"><span id="goalBarLabel">Progress</span><span id="goalBarPct">0%</span></div>
+          <div class="goal-bar"><div class="goal-fill" id="goalFill" style="width:0%"></div></div>
+        </div>
+
+        <!-- VIEW TABS -->
+        <div class="view-tabs" id="viewTabs">
+          <div class="view-tab active" onclick="showTab('chart',this)">📈 Chart</div>
+          <div class="view-tab" onclick="showTab('table',this)">📋 Year Table</div>
+          <div class="view-tab" onclick="showTab('compare',this)">⚖️ Compare</div>
+        </div>
+
+        <!-- CHART -->
+        <div class="tab-view show" id="chartTab">
+          <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
+        </div>
+
+        <!-- TABLE -->
+        <div class="tab-view" id="tableTab">
+          <div class="table-wrap">
+            <table class="yr-table">
+              <thead><tr id="tableHead"></tr></thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- COMPARE -->
+        <div class="tab-view" id="compareTab">
+          <table class="compare-table">
+            <thead>
+              <tr>
+                <th>Instrument</th>
+                <th>Rate (%)</th>
+                <th>Maturity (₹)</th>
+                <th>Gain (₹)</th>
+                <th>Tax on Gain</th>
+              </tr>
+            </thead>
+            <tbody id="compareBody"></tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let mainChart = null;
+  let currentTool = 'fd';
+  let lastResult = {};
+
+  // ── FORMAT ────────────────────────────────────────────────────────
+  function fmt(n) {
+    n = Math.round(n);
+    if (n >= 10000000) return '₹' + (n/10000000).toFixed(2) + ' Cr';
+    if (n >= 100000)   return '₹' + (n/100000).toFixed(2) + ' L';
+    return '₹' + n.toLocaleString('en-IN');
+  }
+
+  // ── TOOL SELECTOR ─────────────────────────────────────────────────
+  function selectTool(tool, el) {
+    currentTool = tool;
+    document.querySelectorAll('.tool-card,.more-card').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderInputForm(tool);
+    document.getElementById('resultSection').classList.remove('show');
+    document.getElementById('placeholder').style.display = 'block';
+    document.getElementById('goalBarSection').style.display = 'none';
+  }
+
+  // ── RENDER INPUT FORMS ────────────────────────────────────────────
+  function renderInputForm(tool) {
+    const titles = {
+      fd:'🏦 Fixed Deposit', rd:'📅 Recurring Deposit', ppf:'🏛 PPF',
+      nsc:'📜 NSC', gold:'🥇 Gold Investment', stocks:'📈 Stocks / Mutual Fund',
+      nps:'🎯 NPS Calculator', simple:'➕ Simple Interest',
+      compare:'⚖️ Compare All', goal:'🎯 Goal Planner'
+    };
+    document.getElementById('inputTitle').textContent = titles[tool] || tool.toUpperCase();
+    document.getElementById('resultTitle').textContent = '📊 ' + (titles[tool]||'').replace(/^../,'') + ' Results';
+
+    const forms = {
+
+      fd: `
+        <div class="field">
+          <label>Principal Amount (₹)</label>
+          <input type="number" id="fd_principal" placeholder="e.g. 100000">
+          <input type="range" min="10000" max="10000000" step="10000" value="100000" oninput="document.getElementById('fd_principal').value=this.value">
+          <div class="range-labels"><span>₹10K</span><span>₹1 Cr</span></div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Interest Rate (% p.a.)</label>
+            <input type="number" id="fd_rate" placeholder="e.g. 7.5" step="0.05" value="7.5">
+          </div>
+          <div class="field">
+            <label>Tenure (Years)</label>
+            <input type="number" id="fd_years" placeholder="e.g. 5" value="5">
+          </div>
+        </div>
+        <div class="field">
+          <label>Compounding Frequency</label>
+          <div class="compound-opts">
+            <div class="copt active" onclick="setCOpt(this,'fd_comp',1)">Annual</div>
+            <div class="copt" onclick="setCOpt(this,'fd_comp',2)">Half-Yearly</div>
+            <div class="copt" onclick="setCOpt(this,'fd_comp',4)">Quarterly</div>
+            <div class="copt" onclick="setCOpt(this,'fd_comp',12)">Monthly</div>
+          </div>
+          <input type="hidden" id="fd_comp" value="1">
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-label">Inflation Adjusted (6%)</div>
+          <label class="toggle-switch"><input type="checkbox" id="fd_inflation"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="field">
+          <label>Account Type</label>
+          <div class="select-wrap">
+            <select id="fd_type">
+              <option value="regular">Regular FD</option>
+              <option value="senior">Senior Citizen FD (+0.5%)</option>
+              <option value="tax">Tax Saver FD (5 yr lock-in)</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-calc" onclick="calcFD()">🧮 Calculate FD Returns</button>`,
+
+      rd: `
+        <div class="field">
+          <label>Monthly Deposit (₹)</label>
+          <input type="number" id="rd_monthly" placeholder="e.g. 5000" value="5000">
+          <input type="range" min="500" max="100000" step="500" value="5000" oninput="document.getElementById('rd_monthly').value=this.value">
+          <div class="range-labels"><span>₹500</span><span>₹1L</span></div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Interest Rate (% p.a.)</label>
+            <input type="number" id="rd_rate" placeholder="e.g. 6.8" step="0.05" value="6.8">
+          </div>
+          <div class="field">
+            <label>Tenure (Months)</label>
+            <input type="number" id="rd_months" placeholder="e.g. 24" value="24">
+          </div>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-label">Inflation Adjusted (6%)</div>
+          <label class="toggle-switch"><input type="checkbox" id="rd_inflation"><span class="toggle-slider"></span></label>
+        </div>
+        <button class="btn-calc" onclick="calcRD()">🧮 Calculate RD Returns</button>`,
+
+      ppf: `
+        <div class="field">
+          <label>Annual Investment (₹)</label>
+          <input type="number" id="ppf_annual" placeholder="e.g. 150000" value="150000">
+          <input type="range" min="500" max="150000" step="500" value="150000" oninput="document.getElementById('ppf_annual').value=this.value">
+          <div class="range-labels"><span>₹500</span><span>₹1.5L (max)</span></div>
+          <div class="field-hint">PPF max limit: ₹1,50,000 per year | Min: ₹500</div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Current PPF Rate (%)</label>
+            <input type="number" id="ppf_rate" value="7.1" step="0.1">
+          </div>
+          <div class="field">
+            <label>Tenure (Years)</label>
+            <input type="number" id="ppf_years" value="15" min="15" max="50">
+            <div class="field-hint">Min 15 years, extendable in blocks of 5</div>
+          </div>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-label">Inflation Adjusted (6%)</div>
+          <label class="toggle-switch"><input type="checkbox" id="ppf_inflation"><span class="toggle-slider"></span></label>
+        </div>
+        <button class="btn-calc" onclick="calcPPF()">🧮 Calculate PPF Returns</button>`,
+
+      nsc: `
+        <div class="field">
+          <label>Investment Amount (₹)</label>
+          <input type="number" id="nsc_amt" placeholder="e.g. 100000" value="100000">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>NSC Rate (% p.a.)</label>
+            <input type="number" id="nsc_rate" value="7.7" step="0.1">
+            <div class="field-hint">Current NSC rate: 7.7%</div>
+          </div>
+          <div class="field">
+            <label>Tenure (Years)</label>
+            <input type="number" id="nsc_years" value="5" min="5" max="5">
+            <div class="field-hint">Fixed 5 years</div>
+          </div>
+        </div>
+        <button class="btn-calc" onclick="calcNSC()">🧮 Calculate NSC Returns</button>`,
+
+      gold: `
+        <div class="field">
+          <label>Investment Amount (₹)</label>
+          <input type="number" id="gold_amt" placeholder="e.g. 100000" value="100000">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Expected Annual Return (%)</label>
+            <input type="number" id="gold_rate" value="12" step="0.5">
+            <div class="field-hint">Historical avg: 10-13% p.a.</div>
+          </div>
+          <div class="field">
+            <label>Years</label>
+            <input type="number" id="gold_years" value="10">
+          </div>
+        </div>
+        <div class="field">
+          <label>Gold Type</label>
+          <div class="select-wrap">
+            <select id="gold_type">
+              <option value="physical">Physical Gold</option>
+              <option value="sgb">Sovereign Gold Bond (SGB)</option>
+              <option value="etf">Gold ETF</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-calc" onclick="calcGold()">🧮 Calculate Gold Returns</button>`,
+
+      stocks: `
+        <div class="field">
+          <label>Investment Type</label>
+          <div class="select-wrap">
+            <select id="stk_type" onchange="updateStockHint()">
+              <option value="lumpsum">Lump Sum</option>
+              <option value="sip">Monthly SIP</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label id="stk_amt_label">Investment Amount (₹)</label>
+          <input type="number" id="stk_amt" placeholder="e.g. 100000" value="100000">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Expected Return (% p.a.)</label>
+            <input type="number" id="stk_rate" value="14" step="0.5">
+            <div class="field-hint">Nifty 50 CAGR: ~12-15%</div>
+          </div>
+          <div class="field">
+            <label>Years</label>
+            <input type="number" id="stk_years" value="15">
+          </div>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-label">Inflation Adjusted (6%)</div>
+          <label class="toggle-switch"><input type="checkbox" id="stk_inflation"><span class="toggle-slider"></span></label>
+        </div>
+        <button class="btn-calc" onclick="calcStocks()">🧮 Calculate Returns</button>`,
+
+      nps: `
+        <div class="field">
+          <label>Monthly Contribution (₹)</label>
+          <input type="number" id="nps_monthly" value="5000">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Current Age</label>
+            <input type="number" id="nps_age" value="30" min="18" max="60">
+          </div>
+          <div class="field">
+            <label>Retirement Age</label>
+            <input type="number" id="nps_retire" value="60" min="45" max="70">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Expected Return (% p.a.)</label>
+            <input type="number" id="nps_rate" value="10" step="0.5">
+            <div class="field-hint">Equity NPS: ~10-12%</div>
+          </div>
+          <div class="field">
+            <label>Annuity Rate (%)</label>
+            <input type="number" id="nps_annuity" value="6" step="0.5">
+          </div>
+        </div>
+        <button class="btn-calc" onclick="calcNPS()">🧮 Calculate NPS Corpus</button>`,
+
+      simple: `
+        <div class="field">
+          <label>Principal Amount (₹)</label>
+          <input type="number" id="si_principal" value="100000">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Rate (% p.a.)</label>
+            <input type="number" id="si_rate" value="8" step="0.5">
+          </div>
+          <div class="field">
+            <label>Years</label>
+            <input type="number" id="si_years" value="5">
+          </div>
+        </div>
+        <button class="btn-calc" onclick="calcSimple()">🧮 Calculate SI Returns</button>`,
+
+      compare: `
+        <div class="field">
+          <label>Principal / Monthly Amount (₹)</label>
+          <input type="number" id="cmp_amt" value="100000">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Years</label>
+            <input type="number" id="cmp_years" value="5">
+          </div>
+          <div class="field">
+            <label>Inflation Rate (%)</label>
+            <input type="number" id="cmp_inflation" value="6">
+          </div>
+        </div>
+        <button class="btn-calc" onclick="calcCompare()">⚖️ Compare All Instruments</button>`,
+
+      goal: `
+        <div class="field">
+          <label>Goal Name</label>
+          <input type="text" id="goal_name" placeholder="e.g. Buy a House, Child Education">
+        </div>
+        <div class="field">
+          <label>Target Amount (₹)</label>
+          <input type="number" id="goal_target" value="5000000">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Years to Goal</label>
+            <input type="number" id="goal_years" value="10">
+          </div>
+          <div class="field">
+            <label>Expected Return (%)</label>
+            <input type="number" id="goal_rate" value="12">
+          </div>
+        </div>
+        <div class="field">
+          <label>Current Savings (₹)</label>
+          <input type="number" id="goal_current" value="0">
+        </div>
+        <button class="btn-calc" onclick="calcGoal()">🎯 Calculate Goal Plan</button>`,
+    };
+
+    document.getElementById('inputForm').innerHTML = forms[tool] || forms['fd'];
+  }
+
+  function setCOpt(el, hiddenId, val) {
+    el.closest('.compound-opts').querySelectorAll('.copt').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById(hiddenId).value = val;
+  }
+
+  // ── SHOW RESULT ───────────────────────────────────────────────────
+  function showResult(insight, stats, chartData, tableData, tableHeaders) {
+    document.getElementById('placeholder').style.display = 'none';
+    document.getElementById('insightBox').innerHTML = insight;
+
+    // Stats
+    const grid = document.getElementById('statGrid');
+    grid.innerHTML = '';
+    stats.forEach(s => {
+      const div = document.createElement('div');
+      div.className = 'stat-tile ' + (s.hl||'');
+      div.innerHTML = `<div class="st-label">${s.label}</div><div class="st-value">${s.value}</div>`;
+      grid.appendChild(div);
+    });
+
+    // Chart
+    if (mainChart) mainChart.destroy();
+    const ctx = document.getElementById('mainChart').getContext('2d');
+    mainChart = new Chart(ctx, {
+      type: chartData.type || 'bar',
+      data: chartData.data,
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top', labels: { font: { family: 'Times New Roman', size: 11 } } },
+          tooltip: { callbacks: { label: c => ' ' + (typeof c.parsed.y === 'number' ? fmt(c.parsed.y) : c.parsed.y) } }
+        },
+        scales: chartData.type === 'doughnut' || chartData.type === 'pie' ? {} : {
+          y: { ticks: { callback: v => fmt(v), font: { family: 'Times New Roman', size: 10 } }, grid: { color: 'rgba(0,184,148,0.07)' } },
+          x: { ticks: { font: { family: 'Times New Roman', size: 10 } }, grid: { display: false } }
+        }
+      }
+    });
+
+    // Table
+    const thead = document.getElementById('tableHead');
+    const tbody = document.getElementById('tableBody');
+    thead.innerHTML = tableHeaders.map(h => `<th style="text-align:${h===tableHeaders[0]?'left':'right'}">${h}</th>`).join('');
+    tbody.innerHTML = '';
+    tableData.forEach(row => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = row.map((c,i) => `<td>${c}</td>`).join('');
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById('resultSection').classList.add('show');
+    showTab('chart', document.querySelector('.view-tab'));
+  }
+
+  function showTab(tab, el) {
+    document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('chartTab').classList.toggle('show', tab==='chart');
+    document.getElementById('tableTab').classList.toggle('show', tab==='table');
+    document.getElementById('compareTab').classList.toggle('show', tab==='compare');
+  }
+
+  // ── COMPARE DATA ──────────────────────────────────────────────────
+  function fillCompare(P, years) {
+    const INSTRUMENTS = [
+      { name:'FD (SBI)',      rate:7.1,  tax:'As per slab',  type:'ci', n:4 },
+      { name:'RD',            rate:6.8,  tax:'As per slab',  type:'rd' },
+      { name:'PPF',           rate:7.1,  tax:'Tax Free',     type:'ci', n:1 },
+      { name:'NSC',           rate:7.7,  tax:'As per slab',  type:'ci', n:2 },
+      { name:'Gold (SGB)',    rate:12.0, tax:'0% if >3yr',   type:'ci', n:1 },
+      { name:'Equity MF',     rate:14.0, tax:'10% LTCG',     type:'ci', n:1 },
+      { name:'NPS (Equity)',  rate:10.5, tax:'Partial exempt',type:'ci', n:1 },
+      { name:'Debt MF',       rate:7.5,  tax:'As per slab',  type:'ci', n:1 },
+    ];
+    const tbody = document.getElementById('compareBody');
+    tbody.innerHTML = '';
+    let best = 0, bestIdx = -1;
+    INSTRUMENTS.forEach((inst, idx) => {
+      let maturity;
+      if (inst.type === 'rd') maturity = P * 12 * years * (1 + inst.rate/100/12 * (12*years));
+      else { const r = inst.rate/100/(inst.n||1); const n = (inst.n||1)*years; maturity = P * Math.pow(1+r, n); }
+      const gain = maturity - P;
+      if (maturity > best) { best = maturity; bestIdx = idx; }
+      const tr = document.createElement('tr');
+      if (idx === bestIdx || maturity === best) tr.classList.add('best-row');
+      tr.innerHTML = `<td>${inst.name}</td><td>${inst.rate}%</td><td>${fmt(maturity)}</td><td>${fmt(gain)}</td><td>${inst.tax}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ── FD ────────────────────────────────────────────────────────────
+  function calcFD() {
+    let P = parseFloat(document.getElementById('fd_principal').value);
+    let r = parseFloat(document.getElementById('fd_rate').value);
+    const y = parseFloat(document.getElementById('fd_years').value);
+    const n = parseInt(document.getElementById('fd_comp').value);
+    const inflation = document.getElementById('fd_inflation').checked;
+    const type = document.getElementById('fd_type').value;
+    if (type === 'senior') r += 0.5;
+
+    const ratePerPeriod = r / 100 / n;
+    const periods = n * y;
+    const maturity = P * Math.pow(1 + ratePerPeriod, periods);
+    const interest = maturity - P;
+    const realReturn = inflation ? maturity / Math.pow(1.06, y) : null;
+
+    const labels=[], invArr=[], matArr=[];
+    const tableData=[];
+    for (let yr=1; yr<=y; yr++) {
+      const m = P * Math.pow(1 + ratePerPeriod, n*yr);
+      labels.push('Year '+yr); invArr.push(P); matArr.push(Math.round(m));
+      tableData.push([`Year ${yr}`, fmt(P), fmt(m-P), fmt(m)]);
+    }
+    tableData.push(['Total', fmt(P), fmt(interest), fmt(maturity)]);
+
+    fillCompare(P, y);
+    showResult(
+      `Your <strong>${fmt(P)}</strong> FD at <strong>${r}% p.a.</strong> (compounded ${['','annually','half-yearly','','quarterly','','','','','','','','monthly'][n]}) for <strong>${y} years</strong> matures to <strong>${fmt(maturity)}</strong>. Interest earned: <strong>${fmt(interest)}</strong>.${inflation ? ` Inflation-adjusted real value: <strong>${fmt(realReturn)}</strong>.` : ''}`,
+      [
+        { label:'Maturity Amount',  value: fmt(maturity),  hl:'hl-green' },
+        { label:'Total Interest',   value: fmt(interest),  hl:'hl-red' },
+        { label:'Principal',        value: fmt(P),         hl:'' },
+        { label:'Effective Gain',   value: ((interest/P)*100).toFixed(1)+'%', hl:'' },
+        ...(realReturn ? [{ label:'Real Value (Infl.)', value: fmt(realReturn), hl:'hl-purple' }] : []),
+      ],
+      { type:'bar', data:{ labels, datasets:[
+        { label:'Principal', data:invArr, backgroundColor:'rgba(0,184,148,0.2)', borderColor:'#00b894', borderWidth:2, borderRadius:4 },
+        { label:'Maturity Value', data:matArr, type:'line', borderColor:'#00c9a7', backgroundColor:'rgba(0,201,167,0.1)', fill:true, tension:0.4, pointBackgroundColor:'#00b894', pointRadius:3 }
+      ]}},
+      tableData, ['Year','Principal','Interest Earned','Maturity']
+    );
+  }
+
+  // ── RD ────────────────────────────────────────────────────────────
+  function calcRD() {
+    const M = parseFloat(document.getElementById('rd_monthly').value);
+    const r = parseFloat(document.getElementById('rd_rate').value) / 100 / 12;
+    const n = parseInt(document.getElementById('rd_months').value);
+    const inflation = document.getElementById('rd_inflation').checked;
+    const maturity = M * ((Math.pow(1+r, n) - 1) / r) * (1+r);
+    const invested = M * n;
+    const interest = maturity - invested;
+    const realReturn = inflation ? maturity / Math.pow(1.06, n/12) : null;
+
+    const labels=[], invArr=[], matArr=[];
+    const tableData=[];
+    for (let mo=1; mo<=n; mo++) {
+      if (mo % (n<=24?3:6) === 0 || mo===n) {
+        const m = M * ((Math.pow(1+r,mo)-1)/r) * (1+r);
+        labels.push('Mo '+mo); invArr.push(M*mo); matArr.push(Math.round(m));
+        tableData.push([`Month ${mo}`, fmt(M*mo), fmt(m-M*mo), fmt(m)]);
+      }
+    }
+
+    fillCompare(M, n/12);
+    showResult(
+      `Your <strong>${fmt(M)}/month</strong> RD at <strong>${(r*100*12).toFixed(2)}% p.a.</strong> for <strong>${n} months</strong> matures to <strong>${fmt(maturity)}</strong>. Total invested: <strong>${fmt(invested)}</strong>, interest: <strong>${fmt(interest)}</strong>.`,
+      [
+        { label:'Maturity Amount', value:fmt(maturity), hl:'hl-green' },
+        { label:'Total Interest',  value:fmt(interest), hl:'hl-red' },
+        { label:'Total Invested',  value:fmt(invested), hl:'' },
+        { label:'Return %',        value:((interest/invested)*100).toFixed(1)+'%', hl:'' },
+        ...(realReturn ? [{ label:'Real Value', value:fmt(realReturn), hl:'hl-purple' }] : []),
+      ],
+      { type:'bar', data:{ labels, datasets:[
+        { label:'Invested', data:invArr, backgroundColor:'rgba(0,184,148,0.2)', borderColor:'#00b894', borderWidth:2, borderRadius:4 },
+        { label:'Maturity', data:matArr, type:'line', borderColor:'#f39c12', fill:false, tension:0.4, pointRadius:3, borderWidth:2 }
+      ]}},
+      tableData, ['Month','Invested','Interest','Value']
+    );
+  }
+
+  // ── PPF ───────────────────────────────────────────────────────────
+  function calcPPF() {
+    const annual = parseFloat(document.getElementById('ppf_annual').value);
+    const r = parseFloat(document.getElementById('ppf_rate').value) / 100;
+    const y = parseInt(document.getElementById('ppf_years').value);
+    const inflation = document.getElementById('ppf_inflation').checked;
+    let bal = 0;
+    const labels=[], balArr=[], invArr=[];
+    const tableData=[];
+    let totalInvested = 0;
+    for (let yr=1; yr<=y; yr++) {
+      bal = (bal + annual) * (1+r);
+      totalInvested += annual;
+      labels.push('Yr '+yr); balArr.push(Math.round(bal)); invArr.push(totalInvested);
+      tableData.push([`Year ${yr}`, fmt(annual), fmt(totalInvested), fmt(bal)]);
+    }
+    const interest = bal - totalInvested;
+    const realVal = inflation ? bal / Math.pow(1.06, y) : null;
+    tableData.push(['Total', '—', fmt(totalInvested), fmt(bal)]);
+
+    fillCompare(annual, y);
+    showResult(
+      `Your PPF of <strong>${fmt(annual)}/year</strong> at <strong>${(r*100).toFixed(1)}%</strong> for <strong>${y} years</strong> grows to <strong>${fmt(bal)}</strong>. Completely tax-free! Interest earned: <strong>${fmt(interest)}</strong>.`,
+      [
+        { label:'Maturity (Tax-Free)',  value:fmt(bal),            hl:'hl-green' },
+        { label:'Interest Earned',      value:fmt(interest),       hl:'hl-red' },
+        { label:'Total Invested',       value:fmt(totalInvested),  hl:'' },
+        { label:'Wealth Multiplier',    value:(bal/totalInvested).toFixed(2)+'x', hl:'hl-blue' },
+        ...(realVal ? [{ label:'Real Value', value:fmt(realVal), hl:'hl-purple' }] : []),
+      ],
+      { type:'bar', data:{ labels, datasets:[
+        { label:'Invested', data:invArr, backgroundColor:'rgba(59,130,246,0.2)', borderColor:'#3b82f6', borderWidth:2, borderRadius:4 },
+        { label:'PPF Balance', data:balArr, type:'line', borderColor:'#00b894', fill:false, tension:0.4, pointRadius:3, borderWidth:2 }
+      ]}},
+      tableData, ['Year','Yearly Investment','Total Invested','Balance']
+    );
+  }
+
+  // ── NSC ───────────────────────────────────────────────────────────
+  function calcNSC() {
+    const P = parseFloat(document.getElementById('nsc_amt').value);
+    const r = parseFloat(document.getElementById('nsc_rate').value) / 100 / 2;
+    const y = 5;
+    const maturity = P * Math.pow(1+r, y*2);
+    const interest = maturity - P;
+    const labels=[], matArr=[];
+    const tableData=[];
+    for (let yr=1; yr<=y; yr++) {
+      const m = P * Math.pow(1+r, yr*2);
+      labels.push('Yr '+yr); matArr.push(Math.round(m));
+      tableData.push([`Year ${yr}`, fmt(P), fmt(m-P), fmt(m)]);
+    }
+    tableData.push(['Total', fmt(P), fmt(interest), fmt(maturity)]);
+    fillCompare(P, y);
+    showResult(
+      `Your NSC of <strong>${fmt(P)}</strong> at <strong>${(r*200).toFixed(1)}%</strong> (compounded half-yearly) matures in <strong>5 years</strong> to <strong>${fmt(maturity)}</strong>. Interest qualifies for 80C deduction (years 1-4).`,
+      [
+        { label:'Maturity Amount', value:fmt(maturity), hl:'hl-green' },
+        { label:'Interest Earned', value:fmt(interest), hl:'hl-red' },
+        { label:'Principal',       value:fmt(P),        hl:'' },
+        { label:'Return',          value:((interest/P)*100).toFixed(1)+'%', hl:'hl-blue' },
+      ],
+      { type:'line', data:{ labels, datasets:[{ label:'NSC Growth', data:matArr, borderColor:'#00b894', backgroundColor:'rgba(0,184,148,0.1)', fill:true, tension:0.4, pointBackgroundColor:'#00b894', pointRadius:4, borderWidth:2 }]}},
+      tableData, ['Year','Principal','Interest','Value']
+    );
+  }
+
+  // ── GOLD ──────────────────────────────────────────────────────────
+  function calcGold() {
+    const P = parseFloat(document.getElementById('gold_amt').value);
+    const r = parseFloat(document.getElementById('gold_rate').value) / 100;
+    const y = parseInt(document.getElementById('gold_years').value);
+    const type = document.getElementById('gold_type').value;
+    let totalR = r;
+    if (type === 'sgb') totalR += 0.025; // extra 2.5% interest on SGB
+    const maturity = P * Math.pow(1+totalR, y);
+    const gain = maturity - P;
+    const labels=[], matArr=[];
+    const tableData=[];
+    for (let yr=1; yr<=y; yr++) {
+      const m = P * Math.pow(1+totalR, yr);
+      labels.push('Yr '+yr); matArr.push(Math.round(m));
+      tableData.push([`Year ${yr}`, fmt(P), fmt(m-P), fmt(m)]);
+    }
+    tableData.push(['Total', fmt(P), fmt(gain), fmt(maturity)]);
+    fillCompare(P, y);
+    showResult(
+      `Your <strong>${fmt(P)}</strong> in ${type==='sgb'?'Sovereign Gold Bond (+ 2.5% p.a. interest)':type==='etf'?'Gold ETF':'Physical Gold'} at <strong>${(totalR*100).toFixed(1)}% CAGR</strong> for <strong>${y} years</strong> grows to <strong>${fmt(maturity)}</strong>.`,
+      [
+        { label:'Maturity Value', value:fmt(maturity), hl:'hl-green' },
+        { label:'Total Gain',     value:fmt(gain),     hl:'hl-red' },
+        { label:'CAGR',           value:(totalR*100).toFixed(1)+'%', hl:'hl-blue' },
+        { label:'Multiplier',     value:(maturity/P).toFixed(2)+'x', hl:'' },
+      ],
+      { type:'line', data:{ labels, datasets:[{ label:'Gold Value', data:matArr, borderColor:'#f39c12', backgroundColor:'rgba(243,156,18,0.1)', fill:true, tension:0.4, pointRadius:3, borderWidth:2 }]}},
+      tableData, ['Year','Invested','Gain','Value']
+    );
+  }
+
+  // ── STOCKS / MF ───────────────────────────────────────────────────
+  function calcStocks() {
+    const type = document.getElementById('stk_type').value;
+    const amt  = parseFloat(document.getElementById('stk_amt').value);
+    const r    = parseFloat(document.getElementById('stk_rate').value) / 100;
+    const y    = parseInt(document.getElementById('stk_years').value);
+    const inflation = document.getElementById('stk_inflation').checked;
+    let maturity, invested;
+    const labels=[], matArr=[], invArr=[];
+    const tableData=[];
+    if (type === 'lumpsum') {
+      invested = amt;
+      for (let yr=1; yr<=y; yr++) {
+        const m = amt * Math.pow(1+r, yr);
+        labels.push('Yr '+yr); matArr.push(Math.round(m)); invArr.push(amt);
+        tableData.push([`Year ${yr}`, fmt(amt), fmt(m-amt), fmt(m)]);
+      }
+      maturity = amt * Math.pow(1+r, y);
+    } else {
+      const mr = r / 12; invested = amt * 12 * y;
+      for (let yr=1; yr<=y; yr++) {
+        const n = yr * 12;
+        const m = amt * ((Math.pow(1+mr,n)-1)/mr) * (1+mr);
+        labels.push('Yr '+yr); matArr.push(Math.round(m)); invArr.push(amt*12*yr);
+        tableData.push([`Year ${yr}`, fmt(amt*12*yr), fmt(m-amt*12*yr), fmt(m)]);
+      }
+      maturity = amt * ((Math.pow(1+mr,y*12)-1)/mr) * (1+mr);
+    }
+    const gain = maturity - invested;
+    const realVal = inflation ? maturity / Math.pow(1.06, y) : null;
+    tableData.push(['Total', fmt(invested), fmt(gain), fmt(maturity)]);
+    fillCompare(amt, y);
+    showResult(
+      `Your <strong>${type==='lumpsum'?fmt(amt)+' lump sum':fmt(amt)+'/month SIP'}</strong> at <strong>${(r*100).toFixed(1)}% CAGR</strong> for <strong>${y} years</strong> grows to <strong>${fmt(maturity)}</strong>. Gain: <strong>${fmt(gain)}</strong>.`,
+      [
+        { label:'Maturity Value', value:fmt(maturity), hl:'hl-green' },
+        { label:'Total Gain',     value:fmt(gain),     hl:'hl-red' },
+        { label:'Total Invested', value:fmt(invested), hl:'' },
+        { label:'Multiplier',     value:(maturity/invested).toFixed(2)+'x', hl:'hl-blue' },
+        ...(realVal ? [{ label:'Real Value', value:fmt(realVal), hl:'hl-purple' }] : []),
+      ],
+      { type:'bar', data:{ labels, datasets:[
+        { label:'Invested', data:invArr, backgroundColor:'rgba(139,92,246,0.2)', borderColor:'#8b5cf6', borderWidth:2, borderRadius:4 },
+        { label:'Value', data:matArr, type:'line', borderColor:'#00b894', fill:false, tension:0.4, pointRadius:3, borderWidth:2 }
+      ]}},
+      tableData, ['Year','Invested','Gain','Value']
+    );
+  }
+
+  // ── NPS ───────────────────────────────────────────────────────────
+  function calcNPS() {
+    const M     = parseFloat(document.getElementById('nps_monthly').value);
+    const age   = parseInt(document.getElementById('nps_age').value);
+    const retire= parseInt(document.getElementById('nps_retire').value);
+    const r     = parseFloat(document.getElementById('nps_rate').value) / 100 / 12;
+    const annRate = parseFloat(document.getElementById('nps_annuity').value) / 100;
+    const months = (retire - age) * 12;
+    const corpus = M * ((Math.pow(1+r,months)-1)/r) * (1+r);
+    const annuityCorpus = corpus * 0.4;
+    const lumpsum = corpus * 0.6;
+    const monthlyPension = (annuityCorpus * annRate) / 12;
+    const invested = M * months;
+    const labels=[], corpArr=[];
+    const tableData=[];
+    for (let yr=1; yr<=(retire-age); yr++) {
+      const m = M * ((Math.pow(1+r,yr*12)-1)/r) * (1+r);
+      labels.push('Age '+(age+yr)); corpArr.push(Math.round(m));
+      if (yr%(retire-age<=10?1:5)===0||yr===(retire-age)) tableData.push([`Age ${age+yr}`, fmt(M*12*yr), fmt(m)]);
+    }
+    tableData.push(['At Retirement', fmt(invested), fmt(corpus)]);
+    fillCompare(M*12, retire-age);
+    showResult(
+      `Investing <strong>${fmt(M)}/month</strong> from age <strong>${age}</strong> to <strong>${retire}</strong> at <strong>${(r*1200).toFixed(1)}%</strong> builds a corpus of <strong>${fmt(corpus)}</strong>. Monthly pension (40% annuity): <strong>${fmt(monthlyPension)}</strong>. Lump sum (60%): <strong>${fmt(lumpsum)}</strong>.`,
+      [
+        { label:'Total Corpus',     value:fmt(corpus),          hl:'hl-green' },
+        { label:'Monthly Pension',  value:fmt(monthlyPension),  hl:'hl-blue' },
+        { label:'Lump Sum (60%)',   value:fmt(lumpsum),         hl:'' },
+        { label:'Total Invested',   value:fmt(invested),        hl:'' },
+        { label:'Wealth Multiplier',value:(corpus/invested).toFixed(2)+'x', hl:'hl-purple' },
+      ],
+      { type:'line', data:{ labels, datasets:[{ label:'NPS Corpus', data:corpArr, borderColor:'#8b5cf6', backgroundColor:'rgba(139,92,246,0.1)', fill:true, tension:0.4, pointRadius:2, borderWidth:2 }]}},
+      tableData, ['Age / Year','Invested','Corpus']
+    );
+  }
+
+  // ── SIMPLE INTEREST ───────────────────────────────────────────────
+  function calcSimple() {
+    const P = parseFloat(document.getElementById('si_principal').value);
+    const r = parseFloat(document.getElementById('si_rate').value) / 100;
+    const y = parseInt(document.getElementById('si_years').value);
+    const siTotal = P * r * y;
+    const maturity = P + siTotal;
+    const ciMaturity = P * Math.pow(1 + r, y);
+    const ciGain = ciMaturity - P;
+    const labels=[], siArr=[], ciArr=[];
+    const tableData=[];
+    for (let yr=1; yr<=y; yr++) {
+      const si = P + P*r*yr;
+      const ci = P * Math.pow(1+r, yr);
+      labels.push('Yr '+yr); siArr.push(Math.round(si)); ciArr.push(Math.round(ci));
+      tableData.push([`Year ${yr}`, fmt(P), fmt(P*r*yr), fmt(si), fmt(ci)]);
+    }
+    tableData.push(['Total', fmt(P), fmt(siTotal), fmt(maturity), fmt(ciMaturity)]);
+    showResult(
+      `Simple Interest on <strong>${fmt(P)}</strong> at <strong>${(r*100).toFixed(1)}%</strong> for <strong>${y} years</strong>: <strong>${fmt(siTotal)}</strong>. If compounded annually instead, you'd earn <strong>${fmt(ciGain-siTotal)}</strong> more!`,
+      [
+        { label:'SI Maturity',  value:fmt(maturity),  hl:'hl-green' },
+        { label:'SI Earned',    value:fmt(siTotal),   hl:'hl-red' },
+        { label:'CI Maturity',  value:fmt(ciMaturity), hl:'hl-blue' },
+        { label:'CI Advantage', value:fmt(ciGain-siTotal), hl:'hl-purple' },
+      ],
+      { type:'line', data:{ labels, datasets:[
+        { label:'Simple Interest', data:siArr, borderColor:'#f39c12', fill:false, tension:0, pointRadius:4, borderWidth:2 },
+        { label:'Compound Interest', data:ciArr, borderColor:'#00b894', fill:false, tension:0.4, pointRadius:4, borderWidth:2 },
+      ]}},
+      tableData, ['Year','Principal','SI Earned','SI Value','CI Value']
+    );
+  }
+
+  // ── COMPARE ALL ───────────────────────────────────────────────────
+  function calcCompare() {
+    const P = parseFloat(document.getElementById('cmp_amt').value);
+    const y = parseInt(document.getElementById('cmp_years').value);
+    const inf = parseFloat(document.getElementById('cmp_inflation').value) / 100;
+    const INSTRUMENTS = [
+      { name:'FD (Quarterly)',  rate:7.1,  n:4,  tax:'As per slab' },
+      { name:'RD',              rate:6.8,  n:12, tax:'As per slab' },
+      { name:'PPF',             rate:7.1,  n:1,  tax:'Tax Free ✅' },
+      { name:'NSC',             rate:7.7,  n:2,  tax:'80C deductible' },
+      { name:'Gold (SGB)',      rate:12.5, n:1,  tax:'0% (>3yr) ✅' },
+      { name:'Equity MF',       rate:14.0, n:1,  tax:'10% LTCG' },
+      { name:'NPS (Equity)',    rate:10.5, n:1,  tax:'Partial exempt' },
+      { name:'Savings Account', rate:3.5,  n:1,  tax:'₹10K exempt' },
+    ];
+    const labels=[], amounts=[], colors=[];
+    const tableData=[];
+    let maxAmt=0;
+    INSTRUMENTS.forEach(inst => {
+      const r = inst.rate/100/inst.n; const n = inst.n*y;
+      const maturity = P * Math.pow(1+r, n);
+      const realVal = maturity / Math.pow(1+inf, y);
+      if (maturity > maxAmt) maxAmt = maturity;
+      labels.push(inst.name); amounts.push(Math.round(maturity));
+      colors.push(maturity===maxAmt?'rgba(0,184,148,0.9)':'rgba(0,184,148,0.35)');
+      tableData.push([inst.name, inst.rate+'%', fmt(maturity), fmt(maturity-P), fmt(realVal), inst.tax]);
+    });
+
+    const tbody = document.getElementById('compareBody');
+    tbody.innerHTML = '';
+    const maxMat = Math.max(...amounts);
+    tableData.forEach((row, i) => {
+      const tr = document.createElement('tr');
+      if (amounts[i] === maxMat) tr.classList.add('best-row');
+      tr.innerHTML = row.map(c => `<td>${c}</td>`).join('');
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById('placeholder').style.display = 'none';
+    document.getElementById('insightBox').innerHTML = `Comparing <strong>${fmt(P)}</strong> invested for <strong>${y} years</strong> across instruments. <strong>Equity MF</strong> gives the highest maturity value but with market risk. <strong>PPF</strong> gives the best tax-free guaranteed returns.`;
+    if (mainChart) mainChart.destroy();
+    const ctx = document.getElementById('mainChart').getContext('2d');
+    mainChart = new Chart(ctx, {
+      type:'bar',
+      data:{ labels, datasets:[{ label:'Maturity Value', data:amounts, backgroundColor:amounts.map(a=>a===maxMat?'rgba(0,184,148,0.85)':'rgba(0,184,148,0.3)'), borderColor:'#00b894', borderWidth:2, borderRadius:6 }]},
+      options:{ responsive:true, maintainAspectRatio:false, indexAxis:'y', plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>' '+fmt(c.parsed.x)}} }, scales:{ x:{ticks:{callback:v=>fmt(v),font:{family:'Times New Roman',size:10}},grid:{color:'rgba(0,184,148,0.07)'}}, y:{ticks:{font:{family:'Times New Roman',size:11}},grid:{display:false}} }}
+    });
+    document.getElementById('resultSection').classList.add('show');
+    showTab('compare', document.querySelectorAll('.view-tab')[2]);
+  }
+
+  // ── GOAL PLANNER ──────────────────────────────────────────────────
+  function calcGoal() {
+    const name    = document.getElementById('goal_name').value || 'Your Goal';
+    const target  = parseFloat(document.getElementById('goal_target').value);
+    const y       = parseInt(document.getElementById('goal_years').value);
+    const r       = parseFloat(document.getElementById('goal_rate').value) / 100;
+    const current = parseFloat(document.getElementById('goal_current').value) || 0;
+    const mr      = r / 12;
+    const months  = y * 12;
+    // Required monthly SIP to reach target (accounting for current savings growth)
+    const currentFV = current * Math.pow(1+r, y);
+    const remaining = Math.max(0, target - currentFV);
+    const requiredSIP = remaining * mr / (Math.pow(1+mr, months) - 1);
+    const requiredLumpsum = remaining / Math.pow(1+r, y);
+    const pct = Math.min(100, Math.round((currentFV / target) * 100));
+
+    document.getElementById('goalBarSection').style.display = 'block';
+    document.getElementById('goalBarLabel').textContent = name + ' — Progress';
+    document.getElementById('goalBarPct').textContent = pct + '% covered by current savings';
+    setTimeout(() => document.getElementById('goalFill').style.width = pct+'%', 100);
+
+    const labels=[], targetArr=[], projArr=[];
+    const tableData=[];
+    for (let yr=1; yr<=y; yr++) {
+      const sipVal = requiredSIP * ((Math.pow(1+mr,yr*12)-1)/mr) * (1+mr);
+      const curGrowth = current * Math.pow(1+r, yr);
+      const total = sipVal + curGrowth;
+      labels.push('Yr '+yr); targetArr.push(target); projArr.push(Math.round(total));
+      tableData.push([`Year ${yr}`, fmt(requiredSIP*12*yr), fmt(curGrowth), fmt(total), fmt(target)]);
+    }
+    tableData.push(['Final', fmt(requiredSIP*12*y), fmt(currentFV), fmt(projArr[projArr.length-1]), fmt(target)]);
+
+    showResult(
+      `To reach <strong>${fmt(target)}</strong> for <strong>${name}</strong> in <strong>${y} years</strong> at <strong>${(r*100).toFixed(1)}%</strong>: invest <strong>${fmt(requiredSIP)}/month</strong> as SIP, OR invest <strong>${fmt(requiredLumpsum)}</strong> today. Your current savings of <strong>${fmt(current)}</strong> will grow to <strong>${fmt(currentFV)}</strong> (${pct}% of goal).`,
+      [
+        { label:'Goal Amount',     value:fmt(target),        hl:'hl-blue' },
+        { label:'Required SIP',    value:fmt(requiredSIP)+'/mo', hl:'hl-green' },
+        { label:'Lump Sum Option', value:fmt(requiredLumpsum),hl:'' },
+        { label:'Current → FV',   value:fmt(currentFV),     hl:'hl-purple' },
+        { label:'Years to Goal',   value:y+' years',         hl:'' },
+      ],
+      { type:'line', data:{ labels, datasets:[
+        { label:'Target', data:targetArr, borderColor:'#e74c3c', borderDash:[8,4], fill:false, pointRadius:0, borderWidth:2 },
+        { label:'Projected Value', data:projArr, borderColor:'#00b894', backgroundColor:'rgba(0,184,148,0.1)', fill:true, tension:0.4, pointRadius:3, borderWidth:2 }
+      ]}},
+      tableData, ['Year','SIP Invested','Current Savings FV','Projected Total','Target']
+    );
+  }
+
+  // ── INIT ──────────────────────────────────────────────────────────
+  window.onload = () => renderInputForm('fd');
+</script>
 </body>
 </html>
